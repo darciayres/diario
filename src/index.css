@@ -123,9 +123,9 @@ textarea {
 }
 
 .celulas {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-gap);
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr)); /* 5 dias sempre na mesma linha, mesmo em tela estreita */
+  gap: 8px;
 }
 
 figure {
@@ -140,13 +140,19 @@ figure {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  width: 96px;
-  height: 96px;
-  padding: 8px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  padding: 6px;
   color: var(--color-text);
   border: 1px solid rgba(0, 0, 0, 0.15);
   border-radius: 8px;
   text-align: left;
+}
+
+/* Contorno duplo (escuro por fora, branco por dentro): aparece sobre qualquer cor do humor. */
+.celula-atual {
+  border-color: var(--color-text);
+  box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-text);
 }
 
 .celula-dia {
@@ -155,6 +161,8 @@ figure {
 
 .celula-humores {
   display: flex;
+  flex-wrap: wrap;
   gap: 2px;
-  font-size: 1.1rem;
+  font-size: 0.95rem;
+  line-height: 1.1;
 }

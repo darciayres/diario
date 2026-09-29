@@ -22,7 +22,7 @@ afterEach(() => {
 })
 
 describe('tela da prova de conceito', () => {
-  it('mostra o editor, os 5 botões de humor e as células de exemplo', () => {
+  it('mostra o editor, os 5 botões de humor e 5 células de calendário', () => {
     render(<App />)
     expect(campo()).toBeInTheDocument()
     for (const n of [1, 2, 3, 4, 5]) {
@@ -128,7 +128,7 @@ describe('navegação entre dias', () => {
     render(<App />)
     fireEvent.change(screen.getByLabelText('Ir para o dia'), { target: { value: '2026-01-10' } })
     expect(screen.getByRole('heading', { name: /sábado, 10 de janeiro de 2026/ })).toBeInTheDocument()
-    expect(screen.getByText('Este dia')).toBeInTheDocument()
+    expect(screen.getByText('10/01')).toBeInTheDocument()
     clicar('Hoje')
     expect(screen.getByRole('heading', { name: /29 de setembro/ })).toBeInTheDocument()
   })
@@ -137,5 +137,58 @@ describe('navegação entre dias', () => {
     render(<App />)
     fireEvent.change(screen.getByLabelText('Ir para o dia'), { target: { value: '' } })
     expect(screen.getByRole('heading', { name: /29 de setembro/ })).toBeInTheDocument()
+  })
+})
+
+describe('calendário: o dia aberto, 2 antes e 2 depois', () => {
+  const dias = () => screen.getAllByRole('img', { name: /^Dia \d+/ }).map((c) => c.getAttribute('aria-label'))
+
+  it('mostra 5 dias em ordem, virando o mês', () => {
+    render(<App />)
+    expect(dias()).toEqual([
+      'Dia 27, sem humor',
+      'Dia 28, sem humor',
+      'Dia 29, sem humor',
+      'Dia 30, sem humor',
+      'Dia 1, sem humor',
+    ])
+  })
+
+  it('só o dia aberto tem o contorno (aria-current)', () => {
+    render(<App />)
+    const atuais = screen.getAllByRole('img', { name: /^Dia \d+/ }).filter((c) => c.hasAttribute('aria-current'))
+    expect(atuais).toHaveLength(1)
+    expect(atuais[0]).toHaveAttribute('aria-label', 'Dia 29, sem humor')
+  })
+
+  it('os dias vizinhos mostram os humores salvos neles', () => {
+    localStorage.setItem('diario:2026-09-28', JSON.stringify({ data: '2026-09-28', texto: 'humor/2' }))
+    localStorage.setItem('diario:2026-10-01', JSON.stringify({ data: '2026-10-01', texto: 'humor/4\nhora/10:00\nhumor/5' }))
+    render(<App />)
+    expect(dias()).toEqual([
+      'Dia 27, sem humor',
+      'Dia 28, humor 2',
+      'Dia 29, sem humor',
+      'Dia 30, sem humor',
+      'Dia 1, humor 4, 5',
+    ])
+  })
+
+  it('a célula do dia aberto acompanha o que se digita', () => {
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: 'Humor 3' }))
+    expect(dias()[2]).toBe('Dia 29, humor 3')
+  })
+
+  it('o calendário acompanha a navegação', () => {
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: 'Seguinte ›' }))
+    expect(dias()).toEqual([
+      'Dia 28, sem humor',
+      'Dia 29, sem humor',
+      'Dia 30, sem humor',
+      'Dia 1, sem humor',
+      'Dia 2, sem humor',
+    ])
   })
 })

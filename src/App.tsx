@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
-import { carregarDia, dataDeHoje, dataPorExtenso, horaAgora, salvarDia, somarDias } from './armazenamento/dia.ts'
+import { carregarDia, dataCurta, dataDeHoje, dataPorExtenso, horaAgora, salvarDia, somarDias } from './armazenamento/dia.ts'
 import { CelulaCalendario } from './calendario/CelulaCalendario.tsx'
 import { EMOJI_HUMOR } from './calendario/celula.ts'
 import { aplicarHumor, inserirHoraAutomatica } from './editor/comandos.ts'
@@ -11,6 +11,13 @@ humor/4
 
 hora/16:05
 humor/3`
+
+/** Humores do dia (1 a 5), na ordem dos blocos. */
+function humoresDoTexto(texto: string): number[] {
+  return parse(texto)
+    .blocos.filter((b) => b.humor !== null)
+    .map((b) => b.humor as number)
+}
 
 function App() {
   const [hoje] = useState(() => dataDeHoje())
@@ -73,7 +80,14 @@ function App() {
   }
 
   const { blocos, avisos } = parse(texto)
-  const humoresDoDia = blocos.filter((b) => b.humor !== null).map((b) => b.humor as number)
+
+  // Calendário: o dia aberto, 2 dias antes e 2 depois. O dia aberto usa o texto ao vivo;
+  // os vizinhos são lidos do que está salvo no aparelho.
+  const diasDoCalendario = [-2, -1, 0, 1, 2].map((deslocamento) => {
+    const dia = somarDias(data, deslocamento)
+    const humores = humoresDoTexto(deslocamento === 0 ? texto : carregarDia(dia))
+    return { dia, humores, atual: deslocamento === 0 }
+  })
 
   return (
     <main className="poc">
@@ -154,28 +168,14 @@ function App() {
 
       <section aria-labelledby="titulo-calendario">
         <h2 id="titulo-calendario">3. Células de calendário</h2>
-        <p className="nota">A primeira é o dia que você está vendo, ao vivo. As outras são exemplos fixos.</p>
+        <p className="nota">O dia que você está vendo (com contorno), com os 2 dias antes e os 2 depois.</p>
         <div className="celulas">
-          <figure>
-            <CelulaCalendario dia={Number(data.slice(8))} humores={humoresDoDia} />
-            <figcaption>{data === hoje ? 'Hoje' : 'Este dia'}</figcaption>
-          </figure>
-          <figure>
-            <CelulaCalendario dia={1} humores={[]} />
-            <figcaption>Sem humor</figcaption>
-          </figure>
-          <figure>
-            <CelulaCalendario dia={2} humores={[4]} />
-            <figcaption>Um humor</figcaption>
-          </figure>
-          <figure>
-            <CelulaCalendario dia={3} humores={[2, 5]} />
-            <figcaption>Dois humores</figcaption>
-          </figure>
-          <figure>
-            <CelulaCalendario dia={4} humores={[1, 3, 5]} />
-            <figcaption>Três humores</figcaption>
-          </figure>
+          {diasDoCalendario.map(({ dia, humores, atual }) => (
+            <figure key={dia}>
+              <CelulaCalendario dia={Number(dia.slice(8))} humores={humores} atual={atual} />
+              <figcaption>{dia === hoje ? 'Hoje' : dataCurta(dia)}</figcaption>
+            </figure>
+          ))}
         </div>
       </section>
     </main>
