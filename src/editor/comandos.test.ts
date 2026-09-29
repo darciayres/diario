@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { parse } from '../parser/index.ts'
-import { aplicarHumor, inserirHoraAutomatica, linhaDoCursor } from './comandos.ts'
+import { aplicarHumor, inserirHoraAutomatica, linhaDoCursor, preencherHoraVazia } from './comandos.ts'
 
 describe('linhaDoCursor', () => {
   it('conta as quebras de linha antes do cursor', () => {
@@ -102,5 +102,49 @@ describe('inserirHoraAutomatica (segundo humor digitado)', () => {
   it('não mexe em duplicidade que está em outra linha que não a do cursor (texto colado antes)', () => {
     const colado = 'humor/4\nhumor/3\nescrevendo aqui'
     expect(inserirHoraAutomatica(colado, colado.length, '16:05')).toBeNull()
+  })
+})
+
+describe('preencherHoraVazia (autocomplete do hora/)', () => {
+  it('completa um hora/ vazio quando o cursor está em outra linha', () => {
+    const r = preencherHoraVazia('hora/\nabc', 9, '16:05')
+    expect(r?.texto).toBe('hora/16:05\nabc')
+  })
+
+  it('deixa em paz a linha do cursor, para a pessoa digitar o próprio horário', () => {
+    expect(preencherHoraVazia('hora/', 5, '16:05')).toBeNull()
+    expect(preencherHoraVazia('abc\nhora/', 9, '16:05')).toBeNull()
+  })
+
+  it('completa a linha do cursor quando pedido (ao sair do campo)', () => {
+    const r = preencherHoraVazia('abc\nhora/', 9, '16:05', true)
+    expect(r?.texto).toBe('abc\nhora/16:05')
+    expect(r?.cursor).toBe(r?.texto.length)
+  })
+
+  it('não mexe em hora/ já preenchido, nem em hora/ inválido', () => {
+    expect(preencherHoraVazia('hora/14:32\nx', 12, '16:05')).toBeNull()
+    expect(preencherHoraVazia('hora/abc\nx', 10, '16:05')).toBeNull()
+    expect(preencherHoraVazia('hora/ fui almoçar\nx', 20, '16:05')).toBeNull()
+  })
+
+  it('aceita espaços depois de hora/ e letra maiúscula', () => {
+    expect(preencherHoraVazia('Hora/  \nabc', 10, '16:05')?.texto).toBe('Hora/16:05\nabc')
+  })
+
+  it('completa vários hora/ vazios de uma vez', () => {
+    const r = preencherHoraVazia('hora/\nx\nhora/\ny', 14, '16:05')
+    expect(r?.texto).toBe('hora/16:05\nx\nhora/16:05\ny')
+  })
+
+  it('o cursor acompanha o texto quando a linha completada está antes dele', () => {
+    const r = preencherHoraVazia('hora/\nabc', 9, '16:05')!
+    expect(r.texto.slice(0, r.cursor)).toBe('hora/16:05\nabc')
+  })
+
+  it('o resultado é lido pelo parser como um bloco com horário, sem avisos', () => {
+    const r = preencherHoraVazia('hora/\nabc', 9, '16:05')!
+    expect(parse(r.texto).blocos[1].hora).toBe('16:05')
+    expect(parse(r.texto).avisos).toEqual([])
   })
 })

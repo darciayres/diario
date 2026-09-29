@@ -50,6 +50,45 @@ export function aplicarHumor(texto: string, cursor: number, humor: number): Edic
   return { texto: linhas.join('\n'), cursor: cursor >= inicio ? cursor + inserido : cursor }
 }
 
+// Linha com só `hora/` (e talvez espaços): a pessoa não preencheu o horário.
+const HORA_VAZIA = /^(\s*hora\/)\s*$/i
+
+/**
+ * Autocomplete da hora: todo `hora/` sem horário vira `hora/HH:MM` com a hora atual.
+ * Por padrão a linha onde está o cursor fica de fora, para a pessoa poder digitar
+ * o próprio horário; ela é completada quando o cursor sai dela.
+ * Com `incluirLinhaDoCursor`, completa também essa linha (usado ao sair do campo).
+ * Devolve null quando não há nada a completar.
+ */
+export function preencherHoraVazia(
+  texto: string,
+  cursor: number,
+  agora: string,
+  incluirLinhaDoCursor = false,
+): Edicao | null {
+  const linhas = texto.split('\n')
+  const linhaCursor = linhaDoCursor(texto, cursor)
+  let mudou = false
+  let deslocamento = 0 // caracteres acrescentados antes do cursor
+  let cursorNaLinha: number | null = null
+  let inicio = 0 // início da linha no texto original
+
+  linhas.forEach((original, i) => {
+    const vazia = HORA_VAZIA.exec(original)
+    if (vazia && (incluirLinhaDoCursor || i !== linhaCursor)) {
+      const nova = vazia[1] + agora
+      linhas[i] = nova
+      mudou = true
+      if (i < linhaCursor) deslocamento += nova.length - original.length
+      else if (i === linhaCursor) cursorNaLinha = inicio + deslocamento + nova.length
+    }
+    inicio += original.length + 1
+  })
+
+  if (!mudou) return null
+  return { texto: linhas.join('\n'), cursor: cursorNaLinha ?? cursor + deslocamento }
+}
+
 /**
  * Regra do editor (não do parser): quando a pessoa digita um `humor/` e o bloco
  * já tem humor, insere `hora/` com a hora atual antes do novo humor, abrindo
