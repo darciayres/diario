@@ -1,0 +1,15 @@
+/* Variáveis de cor e espaçamento. Serão trocadas pelas do Figma quando o design existir. */
+:root {
+  --color-text: #1a1a1a;
+  --color-bg: #ffffff;
+  --space-page: 16px;
+
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+body {
+  margin: 0;
+  padding: var(--space-page);
+}

@@ -23,7 +23,32 @@ Em planejamento. O desenvolvimento é feito em 4 níveis de complexidade, cada u
 
 ## Como rodar
 
-Ainda não há código. Esta seção será preenchida quando o projeto base for criado.
+O projeto usa React, Vite e TypeScript. Você precisa ter o [Node.js](https://nodejs.org/) instalado (versão 20.19 ou mais nova; recomendamos a versão LTS).
+
+1. Baixe o repositório e entre na pasta dele pelo terminal.
+2. Instale as dependências (só na primeira vez ou quando o `package.json` mudar):
+
+   ```bash
+   npm install
+   ```
+
+3. Rode o app em modo de desenvolvimento:
+
+   ```bash
+   npm run dev
+   ```
+
+4. Abra no navegador o endereço que aparecer no terminal, normalmente <http://localhost:5173>. A página se atualiza sozinha quando você salva um arquivo. Para parar, aperte `Ctrl + C` no terminal.
+
+### Outros comandos
+
+| Comando | O que faz |
+|---|---|
+| `npm test` | Roda os testes uma vez (Vitest) |
+| `npm run test:watch` | Roda os testes e repete a cada arquivo salvo |
+| `npm run build` | Verifica os tipos e gera a versão final do site na pasta `dist/` |
+| `npm run preview` | Abre a versão gerada pelo `build`, para conferir antes de publicar |
+| `npm run lint` | Procura problemas comuns no código |
 
 ## Como contribuir
 
