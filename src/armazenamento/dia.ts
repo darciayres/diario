@@ -14,6 +14,24 @@ export function dataDeHoje(agora: Date = new Date()): string {
   return `${agora.getFullYear()}-${mm}-${dd}`
 }
 
+/** Soma (ou subtrai, com número negativo) dias a uma data AAAA-MM-DD. */
+export function somarDias(data: string, dias: number): string {
+  const [ano, mes, dia] = data.split('-').map(Number)
+  // O JavaScript acerta sozinho a virada de mês e de ano (e os anos bissextos).
+  return dataDeHoje(new Date(ano, mes - 1, dia + dias))
+}
+
+/** Data por extenso, para exibir. Ex.: "terça-feira, 29 de setembro de 2026". */
+export function dataPorExtenso(data: string): string {
+  const [ano, mes, dia] = data.split('-').map(Number)
+  return new Date(ano, mes - 1, dia).toLocaleDateString('pt-BR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+}
+
 /** Hora atual do aparelho, no formato HH:MM. */
 export function horaAgora(agora: Date = new Date()): string {
   const hh = String(agora.getHours()).padStart(2, '0')

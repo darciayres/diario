@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { carregarDia, dataDeHoje, horaAgora, salvarDia } from './dia.ts'
+import { carregarDia, dataDeHoje, dataPorExtenso, horaAgora, salvarDia, somarDias } from './dia.ts'
 
 beforeEach(() => {
   localStorage.clear()
@@ -30,6 +30,30 @@ describe('salvar e carregar', () => {
   it('registro corrompido não quebra: devolve texto vazio', () => {
     localStorage.setItem('diario:2026-09-29', '{isso não é json')
     expect(carregarDia('2026-09-29')).toBe('')
+  })
+})
+
+describe('somarDias', () => {
+  it('avança e volta um dia', () => {
+    expect(somarDias('2026-09-29', 1)).toBe('2026-09-30')
+    expect(somarDias('2026-09-29', -1)).toBe('2026-09-28')
+  })
+
+  it('vira o mês e o ano', () => {
+    expect(somarDias('2026-09-30', 1)).toBe('2026-10-01')
+    expect(somarDias('2026-12-31', 1)).toBe('2027-01-01')
+    expect(somarDias('2026-01-01', -1)).toBe('2025-12-31')
+  })
+
+  it('respeita o ano bissexto', () => {
+    expect(somarDias('2028-02-28', 1)).toBe('2028-02-29')
+    expect(somarDias('2027-02-28', 1)).toBe('2027-03-01')
+  })
+})
+
+describe('dataPorExtenso', () => {
+  it('escreve o dia da semana, o dia, o mês e o ano em português', () => {
+    expect(dataPorExtenso('2026-09-29')).toBe('terça-feira, 29 de setembro de 2026')
   })
 })
 
