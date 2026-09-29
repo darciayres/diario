@@ -49,6 +49,34 @@ h2 {
   margin: 8px 0;
 }
 
+.navegacao-dias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: var(--space-gap) 0;
+}
+
+.navegacao-dias button,
+.navegacao-dias input {
+  box-sizing: border-box;
+  min-height: var(--touch-min);
+  padding: 0 var(--space-gap);
+  font: inherit;
+  color: var(--color-text);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.navegacao-dias button {
+  cursor: pointer;
+}
+
+.navegacao-dias button:disabled {
+  color: var(--color-muted);
+  cursor: default;
+}
+
 textarea {
   box-sizing: border-box;
   width: 100%;

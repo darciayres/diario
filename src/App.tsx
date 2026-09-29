@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
-import { carregarDia, dataDeHoje, horaAgora, salvarDia } from './armazenamento/dia.ts'
+import { carregarDia, dataDeHoje, dataPorExtenso, horaAgora, salvarDia, somarDias } from './armazenamento/dia.ts'
 import { CelulaCalendario } from './calendario/CelulaCalendario.tsx'
 import { EMOJI_HUMOR } from './calendario/celula.ts'
 import { aplicarHumor, inserirHoraAutomatica } from './editor/comandos.ts'
@@ -13,7 +13,8 @@ hora/16:05
 humor/3`
 
 function App() {
-  const [data] = useState(() => dataDeHoje())
+  const [hoje] = useState(() => dataDeHoje())
+  const [data, setData] = useState(hoje)
   // O texto é lido antes da primeira tela, para nunca gravar um dia vazio por cima de um dia salvo.
   const [texto, setTexto] = useState(() => carregarDia(data))
   const [salvoOk, setSalvoOk] = useState(true)
@@ -33,6 +34,16 @@ function App() {
     cursorPendente.current = cursor
     setTexto(novoTexto)
     setSalvoOk(salvarDia(data, novoTexto))
+  }
+
+  // Trocar de dia só LÊ o texto do novo dia. Nada é gravado aqui: a gravação
+  // acontece só quando a pessoa altera o texto (em `atualizar`).
+  function irParaDia(novaData: string) {
+    if (novaData === data) return
+    cursorPendente.current = null
+    setData(novaData)
+    setTexto(carregarDia(novaData))
+    setSalvoOk(true)
   }
 
   function aoDigitar(e: ChangeEvent<HTMLTextAreaElement>) {
@@ -62,17 +73,35 @@ function App() {
   }
 
   const { blocos, avisos } = parse(texto)
-  const humoresDeHoje = blocos.filter((b) => b.humor !== null).map((b) => b.humor as number)
+  const humoresDoDia = blocos.filter((b) => b.humor !== null).map((b) => b.humor as number)
 
   return (
     <main className="poc">
       <h1>Diário: prova de conceito</h1>
       <p className="nota">
-        Página descartável para testar as ideias. Hoje é {data}. O texto fica só neste aparelho e não é criptografado.
+        Página descartável para testar as ideias. O texto fica só neste aparelho e não é criptografado.
       </p>
 
+      <nav className="navegacao-dias" aria-label="Navegar entre os dias">
+        <button type="button" onClick={() => irParaDia(somarDias(data, -1))}>
+          ‹ Anterior
+        </button>
+        <input
+          type="date"
+          value={data}
+          aria-label="Ir para o dia"
+          onChange={(e) => e.target.value && irParaDia(e.target.value)}
+        />
+        <button type="button" onClick={() => irParaDia(somarDias(data, 1))}>
+          Seguinte ›
+        </button>
+        <button type="button" onClick={() => irParaDia(hoje)} disabled={data === hoje}>
+          Hoje
+        </button>
+      </nav>
+
       <section aria-labelledby="titulo-editor">
-        <h2 id="titulo-editor">1. Texto do dia</h2>
+        <h2 id="titulo-editor">1. Texto do dia: {dataPorExtenso(data)}</h2>
         <textarea
           ref={areaRef}
           value={texto}
@@ -125,11 +154,11 @@ function App() {
 
       <section aria-labelledby="titulo-calendario">
         <h2 id="titulo-calendario">3. Células de calendário</h2>
-        <p className="nota">A primeira é o seu dia de hoje, ao vivo. As outras são exemplos fixos.</p>
+        <p className="nota">A primeira é o dia que você está vendo, ao vivo. As outras são exemplos fixos.</p>
         <div className="celulas">
           <figure>
-            <CelulaCalendario dia={Number(data.slice(8))} humores={humoresDeHoje} />
-            <figcaption>Hoje</figcaption>
+            <CelulaCalendario dia={Number(data.slice(8))} humores={humoresDoDia} />
+            <figcaption>{data === hoje ? 'Hoje' : 'Este dia'}</figcaption>
           </figure>
           <figure>
             <CelulaCalendario dia={1} humores={[]} />

@@ -76,3 +76,66 @@ describe('tela da prova de conceito', () => {
     expect(screen.getByText(/Humor inválido/)).toBeInTheDocument()
   })
 })
+
+describe('navegação entre dias', () => {
+  const clicar = (nome: string) => fireEvent.click(screen.getByRole('button', { name: nome }))
+
+  it('começa em hoje e mostra a data por extenso', () => {
+    render(<App />)
+    expect(screen.getByRole('heading', { name: /terça-feira, 29 de setembro de 2026/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Hoje' })).toBeDisabled()
+  })
+
+  it('vai para o dia anterior e para o seguinte', () => {
+    render(<App />)
+    clicar('‹ Anterior')
+    expect(screen.getByRole('heading', { name: /segunda-feira, 28 de setembro/ })).toBeInTheDocument()
+    clicar('Seguinte ›')
+    clicar('Seguinte ›')
+    expect(screen.getByRole('heading', { name: /quarta-feira, 30 de setembro/ })).toBeInTheDocument()
+  })
+
+  it('cada dia mostra o seu próprio texto e nada se perde ao ir e voltar', () => {
+    render(<App />)
+    digitar('texto de hoje')
+    clicar('‹ Anterior')
+    expect(campo().value).toBe('') // ontem está vazio
+    digitar('texto de ontem')
+    clicar('Seguinte ›')
+    expect(campo().value).toBe('texto de hoje')
+    clicar('‹ Anterior')
+    expect(campo().value).toBe('texto de ontem')
+    expect(carregarDia('2026-09-29')).toBe('texto de hoje')
+    expect(carregarDia('2026-09-28')).toBe('texto de ontem')
+  })
+
+  it('só olhar um dia não grava nada', () => {
+    render(<App />)
+    clicar('‹ Anterior')
+    clicar('‹ Anterior')
+    expect(localStorage.length).toBe(0)
+  })
+
+  it('o botão de humor age no dia que está aberto', () => {
+    render(<App />)
+    clicar('‹ Anterior')
+    fireEvent.click(screen.getByRole('button', { name: 'Humor 3' }))
+    expect(carregarDia('2026-09-28')).toBe('humor/3\n')
+    expect(carregarDia('2026-09-29')).toBe('')
+  })
+
+  it('o seletor de data leva a qualquer dia e o botão Hoje volta', () => {
+    render(<App />)
+    fireEvent.change(screen.getByLabelText('Ir para o dia'), { target: { value: '2026-01-10' } })
+    expect(screen.getByRole('heading', { name: /sábado, 10 de janeiro de 2026/ })).toBeInTheDocument()
+    expect(screen.getByText('Este dia')).toBeInTheDocument()
+    clicar('Hoje')
+    expect(screen.getByRole('heading', { name: /29 de setembro/ })).toBeInTheDocument()
+  })
+
+  it('ao limpar o seletor de data, continua no mesmo dia', () => {
+    render(<App />)
+    fireEvent.change(screen.getByLabelText('Ir para o dia'), { target: { value: '' } })
+    expect(screen.getByRole('heading', { name: /29 de setembro/ })).toBeInTheDocument()
+  })
+})
