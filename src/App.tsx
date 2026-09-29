@@ -1,9 +1,9 @@
 import { useLayoutEffect, useRef, useState } from 'react'
-import type { ChangeEvent } from 'react'
+import type { ChangeEvent, FocusEvent, SyntheticEvent } from 'react'
 import { carregarDia, dataCurta, dataDeHoje, dataPorExtenso, horaAgora, salvarDia, somarDias } from './armazenamento/dia.ts'
 import { CelulaCalendario } from './calendario/CelulaCalendario.tsx'
 import { EMOJI_HUMOR } from './calendario/celula.ts'
-import { aplicarHumor, inserirHoraAutomatica } from './editor/comandos.ts'
+import { aplicarHumor, inserirHoraAutomatica, preencherHoraVazia } from './editor/comandos.ts'
 import { parse } from './parser/index.ts'
 
 const EXEMPLO = `hora/14:32 fui almoçar
@@ -56,6 +56,7 @@ function App() {
   function aoDigitar(e: ChangeEvent<HTMLTextAreaElement>) {
     let novo = e.target.value
     let cursor = e.target.selectionStart
+    let alterado = false
     const tipo = (e.nativeEvent as InputEvent).inputType
     // Só texto digitado dispara a hora automática. Texto colado não, porque a hora seria falsa.
     // "insertCompositionText" é o que os teclados de celular costumam enviar.
@@ -64,11 +65,31 @@ function App() {
       if (auto) {
         novo = auto.texto
         cursor = auto.cursor
-        atualizar(novo, cursor)
-        return
+        alterado = true
       }
     }
-    atualizar(novo, null)
+    // Um hora/ vazio que ficou para trás (ex.: ao apertar Enter) vira a hora atual.
+    const preenchido = preencherHoraVazia(novo, cursor, horaAgora())
+    if (preenchido) {
+      novo = preenchido.texto
+      cursor = preenchido.cursor
+      alterado = true
+    }
+    atualizar(novo, alterado ? cursor : null)
+  }
+
+  // Cursor saiu da linha (clique ou setas): completa o hora/ vazio que ficou para trás.
+  function aoMoverCursor(e: SyntheticEvent<HTMLTextAreaElement>) {
+    const area = e.currentTarget
+    const r = preencherHoraVazia(area.value, area.selectionStart, horaAgora())
+    if (r) atualizar(r.texto, r.cursor)
+  }
+
+  // Saiu do campo de texto: completa qualquer hora/ vazio, inclusive o da linha do cursor.
+  function aoSairDoCampo(e: FocusEvent<HTMLTextAreaElement>) {
+    const area = e.currentTarget
+    const r = preencherHoraVazia(area.value, area.selectionStart, horaAgora(), true)
+    if (r) atualizar(r.texto, null)
   }
 
   function aoClicarHumor(n: number) {
@@ -120,6 +141,8 @@ function App() {
           ref={areaRef}
           value={texto}
           onChange={aoDigitar}
+          onSelect={aoMoverCursor}
+          onBlur={aoSairDoCampo}
           aria-label="Texto do dia"
           placeholder={`Escreva seu dia. Exemplo:\n\n${EXEMPLO}`}
         />

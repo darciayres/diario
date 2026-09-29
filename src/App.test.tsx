@@ -192,3 +192,49 @@ describe('calendário: o dia aberto, 2 antes e 2 depois', () => {
     ])
   })
 })
+
+describe('autocomplete do hora/', () => {
+  it('enquanto a pessoa está na linha, o hora/ fica como está (dá para digitar a própria hora)', () => {
+    render(<App />)
+    digitar('hora/')
+    expect(campo().value).toBe('hora/')
+    digitar('hora/9:30')
+    expect(campo().value).toBe('hora/9:30')
+  })
+
+  it('ao apertar Enter num hora/ vazio, completa com a hora atual', () => {
+    render(<App />)
+    digitar('hora/\n', 'insertLineBreak')
+    expect(campo().value).toBe('hora/16:05\n')
+    expect(screen.queryByText(/Hora inválida/)).not.toBeInTheDocument()
+  })
+
+  it('ao mover o cursor para outra linha, completa', () => {
+    render(<App />)
+    digitar('abc\nhora/')
+    campo().setSelectionRange(0, 0)
+    fireEvent.select(campo())
+    expect(campo().value).toBe('abc\nhora/16:05')
+  })
+
+  it('ao sair do campo, completa também a linha do cursor', () => {
+    render(<App />)
+    digitar('hora/')
+    fireEvent.blur(campo())
+    expect(campo().value).toBe('hora/16:05')
+    expect(carregarDia(dataDeHoje())).toBe('hora/16:05')
+  })
+
+  it('não muda um hora/ que a pessoa já preencheu', () => {
+    render(<App />)
+    digitar('hora/8:15\nabc')
+    fireEvent.blur(campo())
+    expect(campo().value).toBe('hora/8:15\nabc')
+  })
+
+  it('o bloco completado vira um bloco com horário na leitura', () => {
+    render(<App />)
+    digitar('hora/\nfui almoçar', 'insertLineBreak')
+    expect(screen.getByText(/Bloco das 16:05/)).toBeInTheDocument()
+  })
+})
