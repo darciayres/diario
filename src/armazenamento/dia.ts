@@ -32,6 +32,11 @@ export function dataPorExtenso(data: string): string {
   })
 }
 
+/** Data curta, para legendas. Ex.: "29/09". */
+export function dataCurta(data: string): string {
+  return `${data.slice(8)}/${data.slice(5, 7)}`
+}
+
 /** Hora atual do aparelho, no formato HH:MM. */
 export function horaAgora(agora: Date = new Date()): string {
   const hh = String(agora.getHours()).padStart(2, '0')

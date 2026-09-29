@@ -5,16 +5,19 @@ type Props = {
   dia: number
   /** Humores do dia, na ordem dos blocos. */
   humores: number[]
+  /** true na célula do dia que está aberto: recebe um contorno. */
+  atual?: boolean
 }
 
-export function CelulaCalendario({ dia, humores }: Props) {
+export function CelulaCalendario({ dia, humores, atual = false }: Props) {
   const descricao =
     humores.length === 0 ? 'sem humor' : `humor ${humores.join(', ')}`
 
   return (
     <div
-      className="celula"
+      className={atual ? 'celula celula-atual' : 'celula'}
       style={{ background: fundoDaCelula(humores) }}
+      aria-current={atual ? 'date' : undefined}
       role="img"
       aria-label={`Dia ${dia}, ${descricao}`}
     >

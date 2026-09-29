@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { carregarDia, dataDeHoje, dataPorExtenso, horaAgora, salvarDia, somarDias } from './dia.ts'
+import { carregarDia, dataCurta, dataDeHoje, dataPorExtenso, horaAgora, salvarDia, somarDias } from './dia.ts'
 
 beforeEach(() => {
   localStorage.clear()
@@ -48,6 +48,13 @@ describe('somarDias', () => {
   it('respeita o ano bissexto', () => {
     expect(somarDias('2028-02-28', 1)).toBe('2028-02-29')
     expect(somarDias('2027-02-28', 1)).toBe('2027-03-01')
+  })
+})
+
+describe('dataCurta', () => {
+  it('mostra dia/mês', () => {
+    expect(dataCurta('2026-09-29')).toBe('29/09')
+    expect(dataCurta('2026-01-05')).toBe('05/01')
   })
 })
 
