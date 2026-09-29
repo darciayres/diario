@@ -1,0 +1,24 @@
+# Dependências (baixadas por npm; não vão para o repositório)
+node_modules/
+
+# Resultado de build
+dist/
+build/
+
+# Variáveis de ambiente e segredos
+.env
+.env.*
+
+# Logs
+*.log
+npm-debug.log*
+
+# Arquivos do sistema e de editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Deploy (Vercel / Netlify)
+.vercel/
+.netlify/
