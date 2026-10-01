@@ -129,7 +129,8 @@ Escrever e reler dias.
 
 ### Nível 3 — Lembretes
 - `lembrete/` em dias futuros
-- Indicador no calendário, com forma diferente do ponto de humor- Destaque no topo do dia quando ele chega
+- Indicador no calendário, com forma diferente do ponto de humor
+- Destaque no topo do dia quando ele chega
 
 ### Nível 4 — Extras (só se sobrar tempo)
 Tema escuro, bloqueio por PIN, estatísticas, notificações reais, app nativo (Tauri/Capacitor), transformar comandos em chips visuais no editor.
