@@ -19,7 +19,7 @@ Cada dia é **um documento de texto**. Em vez de formulários separados para hum
 - **Escrever o dia**: abrir o app e escrever no dia de hoje, várias vezes se quiser, e reler os dias anteriores.
 - **Registrar o humor**: uma escala de 1 a 5, com botões ou digitando `humor/N`.
 - **Dividir o dia em momentos**: `hora/` cria um bloco com a hora atual.
-- **Calendário**: navegar pelos dias e ver, em cores, como a pessoa se sentiu; dias com mais de um humor mostram um degradê.
+- **Calendário**: navegar pelos dias e ver, em **pontos coloridos**, como a pessoa se sentiu; cada humor do dia vira um ponto, na ordem em que foi registrado.
 - **Lembretes para o futuro**: escrever `lembrete/` em um dia futuro e vê-lo no calendário e no texto quando o dia chegar.
 
 ### Metodologia: níveis de complexidade
@@ -48,6 +48,7 @@ Cada dia é **um documento de texto**. Humor, hora e lembretes são **comandos e
 | Modelo de dados | Um registro por dia: `data` + `texto` |
 | Humor | Escala de 1 a 5, guardada como número; 5 cores em espectro (emojis definidos no Figma) |
 | Várias entradas por dia | Sim, divididas em **blocos** dentro do texto |
+| Calendário | Um ponto colorido por humor do dia, no lugar de degradê |
 | Lembretes | Só dentro do app (sem notificação no celular) |
 | Idioma dos comandos | Português |
 | Licença | MIT |
@@ -121,22 +122,21 @@ Escrever e reler dias.
 
 ### Nível 2 — Calendário
 - Calendário mensal; toque em um dia abre o texto dele
-- Cada dia mostra cor sólida (um humor) ou **degradê** (vários humores, na ordem dos blocos)
-- Dia sem humor: célula neutra
+- Cada dia mostra **um ponto colorido por humor**, na ordem dos blocos (humores repetidos aparecem repetidos), sobre uma célula neutra
+- Dia sem humor: sem pontos
 - App instalável e funcionando offline
 - Exportar e importar JSON (se der, antecipar)
 
 ### Nível 3 — Lembretes
 - `lembrete/` em dias futuros
-- Indicador no calendário
-- Destaque no topo do dia quando ele chega
+- Indicador no calendário, com forma diferente do ponto de humor- Destaque no topo do dia quando ele chega
 
 ### Nível 4 — Extras (só se sobrar tempo)
 Tema escuro, bloqueio por PIN, estatísticas, notificações reais, app nativo (Tauri/Capacitor), transformar comandos em chips visuais no editor.
 
 ## Decisões adiadas (definir durante o desenvolvimento)
-- Degradê: três ou mais humores, direção (horizontal ou diagonal), emojis junto das cores
-- Paleta dos 5 humores (acessível a daltonismo, com contraste para o número do dia)
+- Pontos do calendário: tamanho, limite de pontos por dia (proposta: até 4, com sinal de "+") e emojis junto das cores
+- Paleta dos 5 humores (acessível a daltonismo, variando também a luminosidade, e com contraste dos pontos sobre o fundo neutro)
 
 ## Design (Figma)
 
@@ -148,7 +148,7 @@ O design será feito **mobile primeiro**: primeiro todas as telas mobile e, ao f
 - Barra de comandos (humor, hora, lembrete)
 - Card de dia para a lista
 - Aviso inline (comando inválido)
-- Célula de calendário (vazia, sólida, degradê, com lembrete)
+- Célula de calendário (vazia, com 1 a 4 pontos, com mais de 4 pontos, com lembrete)
 - Elemento de navegação entre as telas (a definir)
 
 Variables: `mood/1` a `mood/5`, além das cores e espaçamentos do design system.
@@ -175,7 +175,7 @@ O app precisa de uma **navegação entre as telas principais** (Hoje, Dias e, a 
 
 | # | Tela | Estados a desenhar |
 |---|---|---|
-| 8 | Calendário mensal | Célula vazia, com humor sólido, com degradê, hoje, selecionada |
+| 8 | Calendário mensal | Célula vazia, com 1 ponto, com vários pontos, hoje, selecionada |
 | 9 | Resumo do dia (ao tocar num dia) | Humores do dia e início do texto, com acesso ao dia completo |
 | 10 | Configurações | Exportar e importar dados |
 | 11 | Instalar o app | Convite discreto para instalar na tela inicial |
@@ -212,7 +212,7 @@ Em vez de refazer tudo, adaptar as telas que ganham com a tela larga:
 | 1 | Projeto base, repositório, deploy "olá mundo", Figma das telas do nível 1 |
 | 2–3 | Nível 1 (editor, salvar, lista, humor e hora com botões) |
 | 4 | Testes com o grupo, ajustes, tag `v1` |
-| 5–6 | Nível 2 (calendário e degradê), tag `v2` |
+| 5–6 | Nível 2 (calendário com pontos de humor), tag `v2` |
 | 7 | Nível 3 (lembretes), tag `v3`, ou polimento se estiver apertado |
 | 8 | Reserva, README, apresentação; nível 4 só se sobrar tempo |
 

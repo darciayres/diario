@@ -54,7 +54,7 @@ Uma função pura: recebe o texto do dia e devolve blocos. Sem acesso a tela nem
 - Cores e espaçamentos ficam em variáveis CSS (`--mood-1` a `--mood-5` etc.), nunca fixos no meio do código.
 - Mobile primeiro. Alvos de toque de pelo menos 44px.
 - Não dependa só de cor: mantenha texto ou emoji junto do humor. Verifique contraste (WCAG AA).
-- Degradê do calendário: use `linear-gradient(in oklch, ...)`. Direção e emojis serão decididos durante o desenvolvimento.
+- Calendário: cada humor do dia é um **ponto colorido** (`--mood-N`), na ordem dos blocos, sobre célula neutra. Sem degradê. Ponto com pelo menos ~8px. O limite de pontos por dia e os emojis serão decididos durante o desenvolvimento.
 
 ## Privacidade
 
