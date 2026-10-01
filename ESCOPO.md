@@ -133,7 +133,9 @@ Escrever e reler dias.
 - Destaque no topo do dia quando ele chega
 
 ### Nível 4 — Extras (só se sobrar tempo)
-Tema escuro, bloqueio por PIN, estatísticas, notificações reais, app nativo (Tauri/Capacitor), transformar comandos em chips visuais no editor.
+Tema escuro, bloqueio por PIN, estatísticas, notificações reais, app nativo (Tauri/Capacitor), transformar comandos em chips visuais no editor e apelido do dia.
+
+**Apelido do dia:** comando `apelido/` para dar um nome a um dia, como `apelido/o dia que ganhei o campeonato`. Não é lembrete: não avisa nada e não depende de data futura. Vale para o dia inteiro, não para um bloco. Aparece no card da lista de dias, no cabeçalho da leitura e no resumo do dia. A definir quando for feito: o que acontece com mais de um `apelido/` no mesmo dia, e se o apelido aparece na célula do calendário (ela é pequena).
 
 ## Decisões adiadas (definir durante o desenvolvimento)
 - Pontos do calendário: tamanho, limite de pontos por dia (proposta: até 4, com sinal de "+") e emojis junto das cores
@@ -187,7 +189,7 @@ O app precisa de uma **navegação entre as telas principais** (Hoje, Dias e, a 
 - Editor de um dia futuro, com a dica do `lembrete/`
 
 **Nível 4** (só se sobrar tempo; não desenhar agora)
-- Tema escuro (as mesmas telas em outro modo de variáveis), bloqueio por PIN, criação do PIN e estatísticas
+- Tema escuro (as mesmas telas em outro modo de variáveis), bloqueio por PIN, criação do PIN, estatísticas e apelido do dia (no card da lista, na leitura e no resumo do dia)
 
 ### Telas desktop (depois do mobile)
 

@@ -40,6 +40,7 @@ Uma função pura: recebe o texto do dia e devolve blocos. Sem acesso a tela nem
 - Caso limite (decidido): dois `humor/` no mesmo bloco sem `hora/` entre eles (texto colado ou editado de fora). O segundo abre um bloco novo sem horário, com aviso discreto.
 - Comando inválido (`humor/7`, `humor/abc`) vira texto comum e é sinalizado com aviso discreto.
 - `lembrete/` só entra no nível 3.
+- `apelido/` só entra no nível 4 (extras). Não implemente antes de o grupo pedir. Vale para o dia inteiro, não para um bloco.
 
 ## Dados
 
