@@ -72,7 +72,7 @@ Quando uma regra ou decisão do escopo mudar, atualize `ESCOPO.md` e `CLAUDE.md`
 
 **Peça confirmação antes de alterar.** Antes de editar qualquer um dos dois arquivos, mostre exatamente o que vai mudar (o trecho antigo e o novo, nos dois arquivos) e espere a aprovação explícita. Só depois edite, faça o commit (mensagem começando com `Escopo:`) e envie ao GitHub. Nunca altere o escopo por conta própria, nem como consequência de outra tarefa; se uma tarefa exigir mudar o escopo, pare e pergunte primeiro.
 
-Depois de enviar, lembre a pessoa de reenviar o `ESCOPO.md` novo ao projeto no claude.ai, para as duas cópias ficarem iguais.
+Depois de enviar, lembre a pessoa de clicar em **Sync now** no repositório do projeto no claude.ai, para o Claude do projeto ver a versão nova.
 
 ## Fora do escopo
 
