@@ -66,6 +66,14 @@ Diário é conteúdo sensível. Não envie dados a nenhum servidor, não use ana
 - `README.md` em português: o que é, como rodar, como contribuir.
 - Commits pequenos e com mensagens claras, em português.
 
+## Mudanças no escopo
+
+Quando uma regra ou decisão do escopo mudar, atualize `ESCOPO.md` e `CLAUDE.md` **juntos, na mesma alteração**, para os dois nunca ficarem contradizendo um ao outro.
+
+**Peça confirmação antes de alterar.** Antes de editar qualquer um dos dois arquivos, mostre exatamente o que vai mudar (o trecho antigo e o novo, nos dois arquivos) e espere a aprovação explícita. Só depois edite, faça o commit (mensagem começando com `Escopo:`) e envie ao GitHub. Nunca altere o escopo por conta própria, nem como consequência de outra tarefa; se uma tarefa exigir mudar o escopo, pare e pergunte primeiro.
+
+Depois de enviar, lembre a pessoa de reenviar o `ESCOPO.md` novo ao projeto no claude.ai, para as duas cópias ficarem iguais.
+
 ## Fora do escopo
 
 Login, contas, sincronização, backend, notificações push, criptografia, compartilhamento.
