@@ -35,11 +35,14 @@ const DURACAO_DESLIZAR = 300
 /** true em telas de toque (celular, tablet), onde o teclado aparece na tela. */
 const ehTelaDeToque = () => window.matchMedia?.('(pointer: coarse)').matches ?? false
 
+// O deslizar mexe na posição (top) e não em "transform": no iPhone, uma animação de transform
+// leva um ou dois quadros para começar, e nesse intervalo o texto aparecia já no lugar final (um "pisca").
+
 /** Para o deslizar em andamento e devolve quanto o texto estava deslocado naquele instante. */
 function pararDeslizar(elemento: HTMLElement): number {
   const animacoes = elemento.getAnimations?.() ?? []
   if (animacoes.length === 0) return 0
-  const deslocamento = new DOMMatrixReadOnly(getComputedStyle(elemento).transform).m42
+  const deslocamento = parseFloat(getComputedStyle(elemento).top) || 0
   animacoes.forEach((animacao) => animacao.cancel())
   return deslocamento
 }
@@ -48,7 +51,7 @@ function pararDeslizar(elemento: HTMLElement): number {
 function deslizar(elemento: HTMLElement, distancia: number) {
   if (Math.abs(distancia) < 1 || typeof elemento.animate !== 'function') return
   if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
-  elemento.animate([{ transform: `translateY(${distancia}px)` }, { transform: 'none' }], {
+  elemento.animate([{ top: `${distancia}px` }, { top: '0px' }], {
     duration: DURACAO_DESLIZAR,
     easing: 'ease-out',
   })
