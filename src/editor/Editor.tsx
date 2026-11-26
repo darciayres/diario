@@ -28,8 +28,8 @@ export type ControleDoEditor = {
   ler: () => void
   /** Devolve o foco ao texto, se estiver no modo escrever (o teclado continua aberto). */
   focar: () => void
-  /** Rola a tela até o cursor ficar à vista (ex.: depois que o teclado abre). */
-  mostrarCursor: () => void
+  /** Onde o cursor está na tela agora (topo e base, em pixels), ou null se não der para saber. */
+  posicaoDoCursor: () => { top: number; bottom: number } | null
 }
 
 type Props = {
@@ -88,8 +88,8 @@ export function Editor({ texto, aoMudar, modo, aoMudarModo, ref }: Props) {
     view.dispatch({
       effects: compartimentoDoModo.current.reconfigure(configuracaoDoModo('escrever')),
       selection: { anchor: pos },
-      scrollIntoView: true,
     })
+    // A tela (Hoje) cuida de deslizar o texto até o cursor, sem pulo.
     view.focus()
     aoMudarModoAtual.current('escrever')
   }
@@ -201,13 +201,10 @@ export function Editor({ texto, aoMudar, modo, aoMudarModo, ref }: Props) {
       const view = vista.current
       if (view) entrarNaEscrita(view, fimDoEscrito(view.state.doc.toString()))
     },
-    mostrarCursor() {
+    posicaoDoCursor() {
       const view = vista.current
-      if (!view) return
-      // A margem deixa o cursor acima da barra de comandos.
-      view.dispatch({
-        effects: EditorView.scrollIntoView(view.state.selection.main.head, { y: 'nearest', yMargin: 80 }),
-      })
+      if (!view) return null
+      return view.coordsAtPos(view.state.selection.main.head)
     },
     focar() {
       const view = vista.current

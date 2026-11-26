@@ -33,9 +33,10 @@
   padding: calc(env(safe-area-inset-top) + 76px) 20px calc(16px + env(safe-area-inset-bottom));
 }
 
-/* No modo escrever, espaço embaixo para a barra de comandos não cobrir o fim do texto. */
+/* No modo escrever, espaço embaixo para a barra de comandos não cobrir o fim do texto, e para
+   o fim do texto poder subir até a parte de cima da tela antes de o teclado abrir. */
 .hoje--escrever .hoje__coluna {
-  padding-bottom: 96px;
+  padding-bottom: max(96px, 60svh);
 }
 
 /* Linha de botões do topo (Figma: "botões superiores"). Sem faixa: só o botão flutua

@@ -5,7 +5,7 @@
 // A tela funciona como um app: a página fica parada e só a área do texto rola por dentro.
 // A altura da tela acompanha a parte visível (que encolhe quando o teclado abre), então o
 // botão do topo e a barra de comandos ficam presos no lugar pelo próprio navegador.
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import { AlternarModo, type Modo } from '../componentes/AlternarModo.tsx'
 import { BarraDeComandos } from '../componentes/BarraDeComandos.tsx'
 import { TituloDia } from '../componentes/TituloDia.tsx'
@@ -22,6 +22,37 @@ const TECLADO_FECHADO = 80
 const TECLADO_ABERTO = 150
 // Quanto tempo (em milissegundos) o teclado precisa ficar fechado para o dia voltar ao modo ler.
 const ESPERA_TECLADO_FECHADO = 400
+
+// Onde o cursor pode ficar na área do texto, no modo escrever:
+// embaixo, acima da barra de comandos; em cima, abaixo do botão ler/escrever.
+const MARGEM_DO_CURSOR_EMBAIXO = 96
+const MARGEM_DO_CURSOR_EM_CIMA = 120
+// Antes de o teclado subir, o cursor fica nesta fração de cima da tela (o teclado cobre o resto).
+const PARTE_LIVRE_DO_TECLADO = 0.4
+// Duração do deslizar do texto, igual às animações do Figma (0,3 s).
+const DURACAO_DESLIZAR = 300
+
+/** true em telas de toque (celular, tablet), onde o teclado aparece na tela. */
+const ehTelaDeToque = () => window.matchMedia?.('(pointer: coarse)').matches ?? false
+
+/** Para o deslizar em andamento e devolve quanto o texto estava deslocado naquele instante. */
+function pararDeslizar(elemento: HTMLElement): number {
+  const animacoes = elemento.getAnimations?.() ?? []
+  if (animacoes.length === 0) return 0
+  const deslocamento = new DOMMatrixReadOnly(getComputedStyle(elemento).transform).m42
+  animacoes.forEach((animacao) => animacao.cancel())
+  return deslocamento
+}
+
+/** Faz o texto sair de `distancia` pixels abaixo (ou acima) e deslizar até o lugar certo. */
+function deslizar(elemento: HTMLElement, distancia: number) {
+  if (Math.abs(distancia) < 1 || typeof elemento.animate !== 'function') return
+  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
+  elemento.animate([{ transform: `translateY(${distancia}px)` }, { transform: 'none' }], {
+    duration: DURACAO_DESLIZAR,
+    easing: 'ease-out',
+  })
+}
 
 export function Hoje() {
   // O dia é fixado ao abrir a tela: se passar da meia-noite com o app aberto,
@@ -52,10 +83,49 @@ export function Hoje() {
     return () => window.clearTimeout(espera)
   }, [espacoDoTeclado])
 
-  // Quando a tela encolhe (o teclado abriu), o cursor continua à vista.
+  // Quando a tela muda de tamanho (o teclado abriu ou fechou) ou de modo, o texto muda de lugar:
+  // no modo escrever, rola até o cursor ficar à vista; ao crescer, a rolagem pode voltar para cima.
+  // Em vez de pular de uma vez, o texto desliza da posição antiga até a nova.
+  const rolagem = useRef<HTMLDivElement>(null)
+  const coluna = useRef<HTMLDivElement>(null)
+  const rolagemAnterior = useRef(0)
   useEffect(() => {
-    if (modo === 'escrever') editor.current?.mostrarCursor()
-  }, [alturaVisivel, modo])
+    const area = rolagem.current
+    if (!area) return
+    const anotar = () => {
+      rolagemAnterior.current = area.scrollTop
+    }
+    area.addEventListener('scroll', anotar, { passive: true })
+    return () => area.removeEventListener('scroll', anotar)
+  }, [])
+
+  useLayoutEffect(() => {
+    const area = rolagem.current
+    const conteudo = coluna.current
+    if (!area || !conteudo) return
+    const antes = rolagemAnterior.current
+    const deslocamento = pararDeslizar(conteudo)
+
+    if (modo === 'escrever') {
+      const cursor = editor.current?.posicaoDoCursor()
+      if (cursor) {
+        const caixa = area.getBoundingClientRect()
+        // Com o teclado ainda fechado, o cursor fica na parte de cima, onde o teclado não vai cobrir;
+        // assim o Safari não precisa empurrar a página quando o teclado subir.
+        const limiteDeBaixo =
+          ehTelaDeToque() && !tecladoAberto
+            ? caixa.top + caixa.height * PARTE_LIVRE_DO_TECLADO
+            : caixa.bottom - MARGEM_DO_CURSOR_EMBAIXO
+        const limiteDeCima = caixa.top + MARGEM_DO_CURSOR_EM_CIMA
+        if (cursor.bottom > limiteDeBaixo) area.scrollTop += cursor.bottom - limiteDeBaixo
+        else if (cursor.top < limiteDeCima) area.scrollTop -= limiteDeCima - cursor.top
+      }
+    }
+
+    const depois = area.scrollTop
+    rolagemAnterior.current = depois
+    deslizar(conteudo, depois - antes + deslocamento)
+  }, [alturaVisivel, modo, tecladoAberto])
 
   // O Safari às vezes ainda tenta deslizar a página parada para mostrar o cursor; aqui ela volta ao lugar.
   useEffect(() => {
@@ -81,8 +151,8 @@ export function Hoje() {
       className={`hoje hoje--${modo}`}
       style={{ '--altura-visivel': alturaVisivel ? `${alturaVisivel}px` : undefined } as CSSProperties}
     >
-      <div className="hoje__rolagem">
-        <div className="hoje__coluna">
+      <div className="hoje__rolagem" ref={rolagem}>
+        <div className="hoje__coluna" ref={coluna}>
           <TituloDia data={data} />
 
           {fase === 'pronto' && (
