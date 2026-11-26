@@ -48,7 +48,14 @@ Regras gerais:
 - O editor só mexe no que a pessoa **digita**. Texto colado fica exatamente como veio.
 - Maiúsculas e minúsculas valem igual: `Humor/4` é o mesmo que `humor/4`, porque o teclado do celular costuma começar a linha com maiúscula.
 - `humor/1` e `humor/ 1` valem os dois.
-- Um comando escrito errado (`humor/7`, `humor/abc`) continua no texto como texto comum e ganha um **aviso discreto** ao lado da linha.
+- Um comando escrito errado continua no texto como texto comum, com **fundo de aviso e ícone de alerta**. O aviso só aparece quando o cursor sai da linha (enquanto a pessoa escreve, nada pisca). Com o cursor no comando, um **balão** mostra o motivo e como corrigir:
+
+  | Caso | Exemplo | Texto do balão |
+  |---|---|---|
+  | Humor fora de 1 a 5, ou sem número | `humor/7`, `humor/abc`, `humor/` | O humor vai de 1 a 5. Ex.: humor/4 |
+  | Hora inválida, ou sem hora | `hora/25:00`, `hora/abc`, `hora/` | Use a hora assim: hora/14:30 |
+  | Dois `hora/` na mesma linha (no segundo) | `hora/14:30 hora/15:00` | Só vale um hora/ por linha |
+  | Humor num dia futuro | `humor/4` num dia futuro | Não dá para registrar humor num dia que ainda não chegou |
 
 ### Hora e blocos
 
@@ -76,12 +83,12 @@ Regras gerais:
   - **Bloco com hora e sem humor:** escreve `humor/N` na linha do `hora/`.
   - **Bloco sem hora** (o começo do dia), ou **bloco que já tem humor:** abre um bloco novo, numa linha logo abaixo da linha do cursor, com a hora atual e o humor: `hora/15:10 humor/3`. Se a linha do cursor estiver vazia, usa ela mesma.
   - O botão nunca troca um humor que já existe. Para corrigir, a pessoa toca na etiqueta e muda o número no texto.
-- Caso limite: texto colado com dois `humor/` no mesmo bloco, sem `hora/` entre eles. O app não inventa hora: o segundo abre um **bloco novo sem horário**, com aviso discreto.
+- Caso limite: texto colado com dois `humor/` no mesmo bloco, sem `hora/` entre eles. O app não inventa hora: o segundo abre um **bloco novo sem horário**. Não é erro: o segundo humor vale e aparece como etiqueta.
 
 ### Dias que não são hoje
 
 - **Hora:** o botão de hora escreve a hora de agora, o que só faz sentido no dia de hoje. Por isso, em dias passados e futuros, o botão de hora não aparece na barra de comandos, e o app nunca completa um `hora/` vazio com a hora atual. O comando `hora/` digitado vale em qualquer dia: a pessoa pode escrever `hora/09:15` para contar algo que aconteceu, ou vai acontecer, nessa hora.
-- **Humor em dias futuros:** `humor/` é sempre um erro, porque ninguém registra como se sente num dia que ainda não chegou. O comando fica com destaque vermelho de erro e não conta como humor. O botão de humor não aparece na barra de comandos.
+- **Humor em dias futuros:** `humor/` é sempre um erro, porque ninguém registra como se sente num dia que ainda não chegou. O comando ganha o mesmo aviso dos comandos escritos errado e não conta como humor. O botão de humor não aparece na barra de comandos.
 - **Humor em dias passados:** o botão de humor não aparece na barra de comandos, mas o `humor/` digitado continua valendo. Se a pessoa digita um segundo `humor/` num bloco que já tem humor, o editor abre um **bloco novo sem hora** (como no caso limite do texto colado), em vez de inserir a hora atual.
 
 ### Terapia
@@ -119,8 +126,11 @@ Regras gerais:
 - **Mobile primeiro.** Quadro base: iPhone 16, **393 × 852**. O desktop é adaptação no fim.
 - **Navegação: barra lateral** (decidido em 26/11/2026). Abre por cima da tela, pelo botão no canto superior esquerdo. Nela ficam a faixa da semana, a lista de dias e o botão **Central**.
 - **Centralizadora:** uma tela de cards, aberta pelo botão Central. Os cards são Tópicos de terapia, Calendário e Estatísticas. No MVP entra só o card de Tópicos de terapia, com o botão de novo lembrete.
-- Ao abrir o app, o cursor já está no dia de hoje, sem telas no meio.
-- Cada dia tem dois modos, que se alternam por um botão: **escrever** (Escritor) e **ler** (Leitor).
+- Ao abrir o app, o dia de hoje aparece direto, no modo ler, sem telas no meio.
+- Cada dia tem dois modos: **escrever** (Escritor) e **ler** (Leitor). Eles se alternam pelo botão no topo e também:
+  - **tocar no texto** passa para o modo escrever, com o cursor onde a pessoa tocou (no celular, o teclado sobe);
+  - no celular, **fechar o teclado** passa para o modo ler.
+- A barra de comandos só aparece no modo escrever.
 - A barra de comandos do Escritor fica **fixa**, logo acima do teclado. Os botões dela **só escrevem o comando onde está o cursor** (decidido em 26/11/2026). A exceção é o de humor, que abre a escolha de 1 a 5. Os pop-ups de terapia e de lembrete não abrem pela barra: abrem pela Centralizadora e pela barra lateral. Em dias passados e futuros, alguns botões somem (veja "Dias que não são hoje").
 - O destaque de um comando (cor `comando/fundo-ativo`) aparece quando a pessoa toca, apaga ou escreve nele.
 
