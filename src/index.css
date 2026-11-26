@@ -1,15 +1,86 @@
-/* Variáveis de cor e espaçamento. Serão trocadas pelas do Figma quando o design existir. */
+/*
+  Variáveis de design, copiadas do Figma (arquivo DINT2-AV02).
+  Cores: coleção "Roles", modo Claro. Os nomes seguem os do Figma, com "-" no lugar de "/".
+  Não use cores, fontes ou sombras soltas no código: use sempre estas variáveis.
+*/
 :root {
-  --color-text: #1a1a1a;
-  --color-bg: #ffffff;
-  --space-page: 16px;
+  /* Fundos */
+  --fundo-app: #f2eee3;
+  --fundo-superficie: #fcfbf8;
+  --fundo-sobreposicao: #231f1a66;
 
-  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
-  color: var(--color-text);
-  background: var(--color-bg);
+  /* Bordas */
+  --borda-padrao: #e0d9ca;
+  --borda-forte: #a89f91;
+  --borda-selecionado: #456b3d;
+
+  /* Textos */
+  --texto-principal: #231f1a;
+  --texto-secundario: #6b6257;
+  --texto-placeholder: #6b6257;
+  --texto-sobre-primaria: #fcfbf8;
+
+  /* Ações (botões) */
+  --acao-primaria: #456b3d;
+  --acao-secundaria-fundo: var(--fundo-superficie);
+  --acao-secundaria-borda: var(--borda-forte);
+  --acao-secundaria-texto: var(--texto-principal);
+  --acao-secundaria-em-superficie-fundo: var(--fundo-app);
+  --acao-secundaria-em-superficie-borda: var(--borda-forte);
+  --acao-secundaria-em-superficie-texto: var(--texto-principal);
+
+  /* Humor, de 1 (muito mal) a 5 (muito bem). Sempre junto de número e nome. */
+  --humor-1: #a1452a;
+  --humor-2: #bf7d2e;
+  --humor-3: #948a7a;
+  --humor-4: #6fa654;
+  --humor-5: #3d5a32;
+
+  /* Comandos escritos no texto */
+  --comando-fundo-ativo: #cbd9b8;
+  --comando-texto: var(--texto-principal);
+
+  /* Avisos (comando inválido etc.) */
+  --aviso-fundo: #f3dcc3;
+  --aviso-texto: var(--texto-principal);
+  --aviso-sublinhado: #b8572f;
+
+  /* Fontes */
+  --fonte-titulo: 'Lato', system-ui, sans-serif;
+  --fonte-interface: 'Cabin', system-ui, sans-serif;
+  --fonte-diario: 'Habibi', Georgia, serif;
+
+  /* Estilos de texto do Figma (peso, tamanho/altura da linha e família) */
+  --tipo-titulo-grande: 700 40px/1.4 var(--fonte-titulo);
+  --tipo-titulo-medio: 700 32px/1.4 var(--fonte-titulo);
+  --tipo-titulo-pequeno: 700 24px/1.4 var(--fonte-titulo);
+  --tipo-corpo-grande: 500 24px/1.4 var(--fonte-interface);
+  --tipo-corpo-medio: 500 20px/1.4 var(--fonte-interface);
+  --tipo-corpo-pequeno-2: 500 18px/1.4 var(--fonte-interface);
+  --tipo-corpo-pequeno: 500 16px/1.4 var(--fonte-interface);
+  --tipo-corpo-xpequeno: 500 12px/1.4 var(--fonte-interface);
+  --tipo-diario: 400 16px/1.4 var(--fonte-diario);
+
+  /* Sombras (estilos "elevação" do Figma) */
+  --sombra-botoes: 0 2px 20px #0000001a;
+  --sombra-barra: 0 0 8px #231f1a14, 0 1px 2px #231f1a0f;
+  --sombra-pop-up: 0 -4px 24px #231f1a1f, 0 -1px 4px #231f1a0f;
+  --sombra-sutil: 0 1px 4px #00000014;
+
+  /* Espaçamentos */
+  --espaco-pagina: 16px;
+
+  font: var(--tipo-corpo-pequeno);
+  color: var(--texto-principal);
+  background: var(--fundo-app);
 }
 
 body {
   margin: 0;
-  padding: var(--space-page);
+  padding: var(--espaco-pagina);
+}
+
+h1 {
+  margin: 0;
+  font: var(--tipo-titulo-medio);
 }
