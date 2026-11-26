@@ -1,15 +1,12 @@
+import 'fake-indexeddb/auto'
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import App from './App.tsx'
 
 describe('App', () => {
-  it('mostra o título "Diário"', () => {
+  it('abre direto no dia de hoje', async () => {
     render(<App />)
-    expect(screen.getByRole('heading', { name: 'Diário' })).toBeInTheDocument()
-  })
-
-  it('avisa que os dados ficam só no aparelho', () => {
-    render(<App />)
-    expect(screen.getByText(/fica só neste aparelho/)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
+    expect(await screen.findByRole('textbox', { name: 'Texto do dia' })).toBeInTheDocument()
   })
 })

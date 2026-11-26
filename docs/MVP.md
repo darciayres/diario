@@ -55,7 +55,7 @@ Página **Mobile Prototype** do arquivo [DINT2-AV02](https://www.figma.com/desig
 - [x] 1.2 Guardar e ler o texto de cada dia no aparelho.
 
 ### Fase 2 — Hoje (escrevendo)
-- [ ] 2.1 Tela Hoje com o título do dia e o editor de texto.
+- [x] 2.1 Tela Hoje com o título do dia e o editor de texto.
 - [ ] 2.2 Blocos com as etiquetas de hora e humor.
 - [ ] 2.3 Barra de comandos fixa acima do teclado, com os botões de hora e humor (sentimento e apelido ficam escondidos).
 - [ ] 2.4 Pop-up de humor de 1 a 5; o botão troca o humor quando o bloco já tem um.

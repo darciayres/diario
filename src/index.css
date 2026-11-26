@@ -67,9 +67,6 @@
   --sombra-pop-up: 0 -4px 24px #231f1a1f, 0 -1px 4px #231f1a0f;
   --sombra-sutil: 0 1px 4px #00000014;
 
-  /* Espaçamentos */
-  --espaco-pagina: 16px;
-
   font: var(--tipo-corpo-pequeno);
   color: var(--texto-principal);
   background: var(--fundo-app);
@@ -77,10 +74,4 @@
 
 body {
   margin: 0;
-  padding: var(--espaco-pagina);
-}
-
-h1 {
-  margin: 0;
-  font: var(--tipo-titulo-medio);
 }

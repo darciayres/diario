@@ -1,10 +1,7 @@
+import { Hoje } from './telas/Hoje.tsx'
+
 function App() {
-  return (
-    <main>
-      <h1>Diário</h1>
-      <p>Tudo o que você escrever fica só neste aparelho.</p>
-    </main>
-  )
+  return <Hoje />
 }
 
 export default App

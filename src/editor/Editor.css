@@ -1,0 +1,15 @@
+.editor {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 50vh;
+  margin: 0;
+  padding: 0 4px;
+  border: none;
+  outline: none;
+  resize: none;
+  overflow: hidden;
+  background: transparent;
+  font: var(--tipo-diario);
+  color: var(--texto-principal);
+}

@@ -1,0 +1,16 @@
+.titulo-dia {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 10px 4px;
+}
+
+.titulo-dia__semana {
+  font: var(--tipo-corpo-pequeno);
+  color: var(--texto-secundario);
+}
+
+.titulo-dia__data {
+  font: var(--tipo-titulo-medio);
+  color: var(--texto-principal);
+}
