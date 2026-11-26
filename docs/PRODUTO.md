@@ -43,6 +43,8 @@ Cada dia é **um documento de texto livre**. Humor, hora, lembrete e assuntos pa
 | `apelido/` | `apelido/ o dia do campeonato` | Dá um nome ao dia inteiro | Não |
 
 Regras gerais:
+- Um comando precisa **começar a linha** (espaços antes dele não atrapalham). No meio de uma frase, como em "meu humor/4 hoje", é texto comum.
+- Maiúsculas e minúsculas valem igual: `Humor/4` é o mesmo que `humor/4`, porque o teclado do celular costuma começar a linha com maiúscula.
 - `humor/1` e `humor/ 1` valem os dois.
 - Um comando escrito errado (`humor/7`, `humor/abc`) continua no texto como texto comum e ganha um **aviso discreto** ao lado da linha.
 
