@@ -13,6 +13,13 @@
   gap: 8px;
 }
 
+/* Os botões e a setinha, lado a lado, com 4 px entre eles (Figma). */
+.barra-comandos__linha {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .barra-comandos__botoes {
   display: flex;
   align-items: center;
@@ -21,6 +28,43 @@
   border-radius: 24px;
   background: var(--fundo-superficie);
   box-shadow: var(--sombra-barra);
+  /* Animação do Figma (Smart Animate, ease-out, 0,3 s): os botões somem esmaecendo. */
+  transition:
+    opacity 0.3s ease-out,
+    visibility 0s linear 0s;
+}
+
+.barra-comandos__botoes--recolhida {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.3s ease-out,
+    visibility 0s linear 0.3s;
+}
+
+/* Setinha (Figma: "hide_command bar"). Gira meia volta ao recolher: › vira ‹. */
+.barra-comandos__recolher {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Mesma altura da barra; no Figma, 38 px. */
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 1px solid var(--borda-padrao);
+  border-radius: 50%;
+  background: var(--fundo-superficie);
+  box-shadow: var(--sombra-barra);
+  cursor: pointer;
+  transition: transform 0.3s ease-out;
+}
+
+.barra-comandos__recolher--recolhida {
+  transform: rotate(180deg);
+}
+
+.barra-comandos__recolher img {
+  display: block;
 }
 
 /* 44 px de área de toque (no Figma o botão tem 40 × 36). */
@@ -53,6 +97,20 @@
   border-radius: 24px;
   background: var(--fundo-superficie);
   box-shadow: var(--sombra-botoes);
+  /* Animação do Figma (ease-out, 0,1 s): aparece e some esmaecendo. */
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.1s ease-out,
+    visibility 0s linear 0.1s;
+}
+
+.humor-popup--aberto {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 0.1s ease-out,
+    visibility 0s linear 0s;
 }
 
 /* Cada humor: ponto colorido com o número embaixo. 44 px de área de toque. */
@@ -76,4 +134,13 @@
   width: 12px;
   height: 12px;
   border-radius: 50%;
+}
+
+/* Quem pede menos movimento no aparelho não vê as animações. */
+@media (prefers-reduced-motion: reduce) {
+  .barra-comandos__botoes,
+  .barra-comandos__recolher,
+  .humor-popup {
+    transition: none;
+  }
 }

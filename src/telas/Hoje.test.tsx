@@ -155,6 +155,25 @@ describe('Tela Hoje', () => {
     expect(textoDo(editor)).toBe('hora/08:00 humor/5\nacordei cedo')
   })
 
+  it('a setinha recolhe os botões e mostra de novo', async () => {
+    render(<Hoje />)
+    await acharEditor()
+    const setinha = screen.getByRole('button', { name: 'Recolher a barra de comandos' })
+    fireEvent.click(setinha)
+    expect(screen.queryByRole('toolbar', { name: 'Comandos' })).not.toBeInTheDocument()
+    expect(setinha).toHaveAccessibleName('Mostrar a barra de comandos')
+    fireEvent.click(setinha)
+    expect(screen.getByRole('toolbar', { name: 'Comandos' })).toBeInTheDocument()
+  })
+
+  it('recolher a barra fecha o pop-up de humor', async () => {
+    render(<Hoje />)
+    await acharEditor()
+    fireEvent.click(screen.getByRole('button', { name: 'Escolher o humor' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Recolher a barra de comandos' }))
+    expect(screen.queryByRole('group', { name: 'Escolha o humor' })).not.toBeInTheDocument()
+  })
+
   it('avisa que os dados ficam só no aparelho', () => {
     render(<Hoje />)
     expect(screen.getByText(/só neste aparelho/)).toBeInTheDocument()
