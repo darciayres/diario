@@ -50,6 +50,7 @@ Página **Mobile Prototype** do arquivo [DINT2-AV02](https://www.figma.com/desig
 - [ ] 0.3 Publicar na Vercel ou na Netlify e anotar o endereço no README.
 
 ### Fase 1 — Texto e parser
+> A branch `prova-de-conceito` já tem um parser, os comandos do editor e o armazenamento, com testes. Reaproveitar o que estiver de acordo com o `PRODUTO.md` (lá os dados ficam no localStorage; aqui, no IndexedDB).
 - [ ] 1.1 Parser de `hora/` e `humor/`, com um teste para cada regra de blocos e humor do `PRODUTO.md`.
 - [ ] 1.2 Guardar e ler o texto de cada dia no aparelho.
 
