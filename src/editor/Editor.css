@@ -1,15 +1,60 @@
+/* Etiquetas "Hora" e "Humor" (Figma, seção Componentes em uso). */
+
 .editor {
-  display: block;
-  box-sizing: border-box;
   width: 100%;
-  min-height: 50vh;
-  margin: 0;
-  padding: 0 4px;
-  border: none;
-  outline: none;
-  resize: none;
-  overflow: hidden;
-  background: transparent;
-  font: var(--tipo-diario);
+}
+
+/* Linha que só tem etiquetas: 12 px de espaço até o texto, como entre os blocos do Figma. */
+.editor .linha-etiquetas {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.etiquetas {
+  display: inline-flex;
+  gap: 8px;
+  align-items: flex-start;
+  vertical-align: middle;
+}
+
+.etiqueta {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border: 1px solid var(--borda-padrao);
+  background: var(--fundo-superficie);
+  font: var(--tipo-corpo-xpequeno);
+  white-space: nowrap;
+}
+
+.etiqueta--hora {
+  border-radius: 16px;
+  color: var(--texto-secundario);
+}
+
+.etiqueta--humor {
+  gap: 4px;
+  border-radius: 12px;
   color: var(--texto-principal);
+}
+
+.etiqueta__ponto {
+  width: 10px;
+  height: 10px;
+  margin-right: 6px; /* 10 px entre o ponto e o número, como no Figma */
+  border-radius: 50%;
+}
+
+.etiqueta__separador {
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* Comando com o cursor em cima: volta a ser texto, com o fundo de destaque. */
+.editor .comando-ativo {
+  border-radius: 4px;
+  background: var(--comando-fundo-ativo);
+  color: var(--comando-texto);
 }
