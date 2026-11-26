@@ -52,6 +52,12 @@ const tema = EditorView.theme({
   '.cm-placeholder': { color: 'var(--texto-secundario)' },
 })
 
+/** true em telas de toque (celular, tablet), onde o teclado aparece na tela. */
+const ehTelaDeToque = () => window.matchMedia?.('(pointer: coarse)').matches ?? false
+
+// Depois que o texto perde o foco, quanto esperar (em milissegundos) antes de voltar para o modo ler.
+const ESPERA_SEM_FOCO = 300
+
 /** A parte da configuração que muda entre ler e escrever. */
 const configuracaoDoModo = (modo: Modo) => [EditorView.editable.of(modo === 'escrever'), modoLeitura.of(modo === 'ler')]
 
@@ -78,6 +84,13 @@ export function Editor({ texto, aoMudar, modo, aoMudarModo, ref }: Props) {
     })
     view.focus()
     aoMudarModoAtual.current('escrever')
+  }
+
+  /** Volta para o modo ler: o texto deixa de ser editável e o teclado desce. */
+  function sairDaEscrita(view: EditorView) {
+    view.dispatch({ effects: compartimentoDoModo.current.reconfigure(configuracaoDoModo('ler')) })
+    view.contentDOM.blur()
+    aoMudarModoAtual.current('ler')
   }
 
   // Cria o editor uma vez só.
@@ -116,6 +129,15 @@ export function Editor({ texto, aoMudar, modo, aoMudarModo, ref }: Props) {
               evento.preventDefault()
               entrarNaEscrita(view, pos)
               return true
+            },
+            // No celular, tocar fora do texto fecha o teclado (no iPhone, o texto perde o foco):
+            // o dia volta para o modo ler. Os botões da barra não tiram o foco, então não contam.
+            blur(_evento, view) {
+              if (view.state.facet(modoLeitura) || !ehTelaDeToque()) return false
+              window.setTimeout(() => {
+                if (vista.current === view && !view.hasFocus && !view.state.facet(modoLeitura)) sairDaEscrita(view)
+              }, ESPERA_SEM_FOCO)
+              return false
             },
           }),
           EditorView.updateListener.of((u) => {
@@ -174,11 +196,7 @@ export function Editor({ texto, aoMudar, modo, aoMudarModo, ref }: Props) {
       if (view && !view.state.facet(modoLeitura) && !view.hasFocus) view.focus()
     },
     ler() {
-      const view = vista.current
-      if (!view) return
-      view.dispatch({ effects: compartimentoDoModo.current.reconfigure(configuracaoDoModo('ler')) })
-      view.contentDOM.blur()
-      aoMudarModoAtual.current('ler')
+      if (vista.current) sairDaEscrita(vista.current)
     },
   }))
 

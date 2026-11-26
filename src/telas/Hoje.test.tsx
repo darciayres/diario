@@ -114,6 +114,33 @@ describe('Tela Hoje', () => {
     }
   })
 
+  it('no celular, tocar fora do texto (que tira o foco) volta para o modo ler', async () => {
+    const original = window.matchMedia
+    const nada = () => {}
+    window.matchMedia = ((consulta: string) => ({
+      matches: consulta === '(pointer: coarse)',
+      addListener: nada,
+      removeListener: nada,
+      addEventListener: nada,
+      removeEventListener: nada,
+    })) as unknown as typeof window.matchMedia
+    try {
+      const editor = await abrirEscrevendo()
+      act(() => editor.blur())
+      await waitFor(() => expect(editor).toHaveAttribute('contenteditable', 'false'))
+      expect(screen.queryByRole('toolbar', { name: 'Comandos' })).not.toBeInTheDocument()
+    } finally {
+      window.matchMedia = original
+    }
+  })
+
+  it('no computador, perder o foco não muda o modo', async () => {
+    const editor = await abrirEscrevendo()
+    act(() => editor.blur())
+    await act(() => new Promise((r) => setTimeout(r, 400)))
+    expect(editor).toHaveAttribute('contenteditable', 'true')
+  })
+
   it('no modo ler, os comandos aparecem como etiquetas, mesmo com o cursor em cima', async () => {
     await salvarDia(HOJE, 'hora/08:30 humor/4')
     render(<Hoje />)

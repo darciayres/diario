@@ -1,11 +1,11 @@
 // Tela Hoje (quadros "V2 TELA | Diário Leitor" e "V2 TELA | Diário Escritor" do Figma).
 // Abre no modo ler. Tocar no texto ou no botão de escrever passa para o modo escrever;
 // no celular, fechar o teclado volta para o modo ler.
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { AlternarModo, type Modo } from '../componentes/AlternarModo.tsx'
 import { BarraDeComandos } from '../componentes/BarraDeComandos.tsx'
 import { TituloDia } from '../componentes/TituloDia.tsx'
-import { useEspacoDoTeclado } from '../componentes/useEspacoDoTeclado.ts'
+import { useDeslocamentoDaTela, useEspacoDoTeclado } from '../componentes/useEspacoDoTeclado.ts'
 import { dataDeHoje, horaAgora } from '../datas.ts'
 import { escreverHumor, inserirHora } from '../editor/comandos.ts'
 import { Editor, type ControleDoEditor } from '../editor/Editor.tsx'
@@ -29,6 +29,7 @@ export function Hoje() {
 
   // No celular, quando o teclado desce, o dia volta para o modo ler.
   const espacoDoTeclado = useEspacoDoTeclado()
+  const deslocamentoDaTela = useDeslocamentoDaTela()
   const tecladoEstavaAberto = useRef(false)
   useEffect(() => {
     if (espacoDoTeclado > TECLADO_ABERTO) {
@@ -52,7 +53,10 @@ export function Hoje() {
 
   return (
     <main className={`hoje hoje--${modo}`}>
-      <header className="hoje__topo">
+      <header
+        className="hoje__topo"
+        style={{ '--deslocamento-da-tela': `${deslocamentoDaTela}px` } as CSSProperties}
+      >
         {fase === 'pronto' && <AlternarModo modo={modo} aoEscolher={escolherModo} />}
       </header>
 
