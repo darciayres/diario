@@ -28,13 +28,15 @@
   min-height: 56px;
   margin: 0 -20px;
   padding: calc(env(safe-area-inset-top) + 12px) 20px 8px;
-  /* Fundo quase opaco: só o desfoque (como no Figma) deixava o texto de baixo
-     como uma mancha cinza no iPhone. O desfoque fica como acabamento. */
-  background: color-mix(in srgb, var(--fundo-app) 92%, transparent);
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
+  /* Sem faixa: só o botão flutua, e o texto passa por baixo dele ao rolar.
+     A área vazia em volta do botão deixa o toque chegar ao texto. */
+  pointer-events: none;
   /* No iPhone, com o teclado aberto, a tela visível "desliza" para baixo; o topo acompanha. */
   transform: translateY(var(--deslocamento-da-tela, 0px));
+}
+
+.hoje__topo > * {
+  pointer-events: auto;
 }
 
 .hoje__aviso {
