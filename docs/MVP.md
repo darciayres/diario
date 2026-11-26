@@ -63,7 +63,7 @@ Página **Mobile Prototype** do arquivo [DINT2-AV02](https://www.figma.com/desig
 - [x] 2.6 Texto de exemplo no dia vazio.
 
 ### Fase 3 — Hoje (lendo)
-- [ ] 3.1 Botão de ler/escrever e modo leitura, com os comandos "polidos".
+- [ ] 3.1 Botão de ler/escrever e modo leitura, com os comandos "polidos". No celular, fechar o teclado leva à leitura e tocar no texto volta à escrita.
 
 ### Fase 4 — Barra lateral e outros dias
 - [ ] 4.1 Barra lateral abre e fecha pelo botão.
@@ -108,7 +108,7 @@ Cada item precisa estar no Figma antes da tarefa que depende dele.
 
 - **Formato do texto escrito pelos pop-ups:** há uma proposta no `PRODUTO.md`, a confirmar com o grupo antes das tarefas 5.5 e 6.5.
 - **Paleta dos humores:** a atual vale para o MVP, mas pode mudar.
-- **Visual do aviso de comando inválido (a rever):** sugestão provisória na página claude (CL) do Figma: o comando continua como texto, com fundo `aviso/fundo` e ícone de alerta, e um balão com o motivo e como corrigir aparece quando o cursor está no comando. O mesmo visual vale para o humor em dias futuros.
+- **Visual do aviso de comando inválido (a rever):** sugestão provisória na página claude (CL) do Figma: o comando continua como texto, com fundo `aviso/fundo` e ícone de alerta, e um balão com o motivo e como corrigir aparece quando o cursor está no comando. O mesmo visual vale para o humor em dias futuros. O balão aparece acima do comando e cobre a linha de cima enquanto o cursor está nele; ver no celular se incomoda.
 
 ## Fora do MVP
 
