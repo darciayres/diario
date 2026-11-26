@@ -53,6 +53,13 @@ describe('Tela Hoje', () => {
     expect(textoDo(await acharEditor())).toBe('acordei cedo\nhumor/4')
   })
 
+  it('abre com o cursor no fim do texto (assim as etiquetas aparecem)', async () => {
+    await salvarDia(HOJE, 'hora/08:30 humor/4\nacordei cedo')
+    render(<Hoje />)
+    const vista = vistaDe(await acharEditor())
+    expect(vista.state.selection.main.head).toBe('hora/08:30 humor/4\nacordei cedo'.length)
+  })
+
   it('salva o que a pessoa escreve', async () => {
     render(<Hoje />)
     const editor = await acharEditor()

@@ -40,6 +40,8 @@ export function Editor({ texto, aoMudar }: Props) {
       parent: caixa.current!,
       state: EditorState.create({
         doc: textoInicial,
+        // Ao abrir, o cursor fica no fim do texto, pronto para continuar o dia.
+        selection: { anchor: textoInicial.length },
         extensions: [
           history(),
           keymap.of([...defaultKeymap, ...historyKeymap]),
@@ -59,8 +61,9 @@ export function Editor({ texto, aoMudar }: Props) {
       }),
     })
     vista.current = view
-    // Ao abrir o app, o cursor já está no dia de hoje.
+    // Ao abrir o app, o cursor já está no dia de hoje, no fim do texto.
     view.focus()
+    view.dispatch({ effects: EditorView.scrollIntoView(textoInicial.length) })
     return () => {
       view.destroy()
       vista.current = null
