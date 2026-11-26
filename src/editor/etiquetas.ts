@@ -24,10 +24,8 @@ export type Trecho =
 
 type Selecao = { from: number; to: number }
 
-// O comando, do começo da linha até o fim do valor (ex.: "  humor/ 4").
-const COMANDO_NO_INICIO = /^\s*(?:hora|humor)\/\s*\S*/i
-
-type Comando = { de: number; ate: number; sozinhoNaLinha: boolean; tipo: 'hora' | 'humor'; valor: string | number }
+/** Um comando válido, com a posição no texto inteiro. */
+type Comando = { de: number; ate: number; linha: number; tipo: 'hora' | 'humor'; valor: string | number }
 
 /** Função pura: diz quais trechos do texto viram etiqueta e quais ficam destacados. */
 export function calcularTrechos(texto: string, selecoes: readonly Selecao[]): Trecho[] {
@@ -39,32 +37,53 @@ export function calcularTrechos(texto: string, selecoes: readonly Selecao[]): Tr
     pos += linha.length + 1
   }
 
-  function comandoDaLinha(i: number, tipo: 'hora' | 'humor', valor: string | number): Comando {
-    const linha = linhas[i]
-    const encontrado = COMANDO_NO_INICIO.exec(linha)![0]
-    const espacosAntes = linha.length - linha.trimStart().length
-    return {
-      de: inicioDaLinha[i] + espacosAntes,
-      ate: inicioDaLinha[i] + encontrado.length,
-      sozinhoNaLinha: linha.slice(encontrado.length).trim() === '',
-      tipo,
-      valor,
-    }
+  /** true se, na linha, fora do trecho [de, ate) só há espaços (posições no texto inteiro). */
+  function soIssoNaLinha(linha: number, de: number, ate: number): boolean {
+    const texto = linhas[linha]
+    const ini = inicioDaLinha[linha]
+    return texto.slice(0, de - ini).trim() === '' && texto.slice(ate - ini).trim() === ''
   }
 
-  // Só os comandos válidos viram etiqueta; o parser já decidiu quais são.
+  // Só os comandos válidos viram etiqueta; o parser já decidiu quais são e onde estão.
   const grupos: Comando[][] = []
   for (const bloco of parse(texto).blocos) {
-    const hora = bloco.hora !== null ? comandoDaLinha(bloco.linhaInicial, 'hora', bloco.hora) : null
-    const humor =
-      bloco.humor !== null && bloco.linhaHumor !== null ? comandoDaLinha(bloco.linhaHumor, 'humor', bloco.humor) : null
-    // hora/ numa linha e humor/ logo na linha de baixo, sozinhos: viram uma fileira só, como no Figma.
-    if (hora && humor && hora.sozinhoNaLinha && humor.sozinhoNaLinha && bloco.linhaHumor === bloco.linhaInicial + 1) {
-      grupos.push([hora, humor])
-    } else {
-      if (hora) grupos.push([hora])
-      if (humor) grupos.push([humor])
+    const hora: Comando | null =
+      bloco.hora !== null && bloco.colunasHora
+        ? {
+            tipo: 'hora',
+            valor: bloco.hora,
+            linha: bloco.linhaInicial,
+            de: inicioDaLinha[bloco.linhaInicial] + bloco.colunasHora.de,
+            ate: inicioDaLinha[bloco.linhaInicial] + bloco.colunasHora.ate,
+          }
+        : null
+    const humor: Comando | null =
+      bloco.humor !== null && bloco.linhaHumor !== null && bloco.colunasHumor
+        ? {
+            tipo: 'humor',
+            valor: bloco.humor,
+            linha: bloco.linhaHumor,
+            de: inicioDaLinha[bloco.linhaHumor] + bloco.colunasHumor.de,
+            ate: inicioDaLinha[bloco.linhaHumor] + bloco.colunasHumor.ate,
+          }
+        : null
+
+    if (hora && humor) {
+      const [primeiro, segundo] = hora.de < humor.de ? [hora, humor] : [humor, hora]
+      // Na mesma linha, lado a lado (só espaço entre eles): uma fileira só.
+      const ladoALado = hora.linha === humor.linha && texto.slice(primeiro.ate, segundo.de).trim() === ''
+      // hora/ numa linha e humor/ logo na de baixo, os dois sozinhos: também uma fileira só, como no Figma.
+      const empilhados =
+        humor.linha === hora.linha + 1 &&
+        soIssoNaLinha(hora.linha, hora.de, hora.ate) &&
+        soIssoNaLinha(humor.linha, humor.de, humor.ate)
+      if (ladoALado || empilhados) {
+        grupos.push([primeiro, segundo])
+        continue
+      }
     }
+    if (hora) grupos.push([hora])
+    if (humor) grupos.push([humor])
   }
 
   const trechos: Trecho[] = []
@@ -83,7 +102,8 @@ export function calcularTrechos(texto: string, selecoes: readonly Selecao[]): Tr
         ate,
         hora: hora ? (hora.valor as string) : null,
         humor: humor ? (humor.valor as number) : null,
-        linhaInteira: grupo.every((c) => c.sozinhoNaLinha),
+        // Empilhados em duas linhas já são, por definição, sozinhos nas linhas deles.
+        linhaInteira: grupo[0].linha !== grupo[grupo.length - 1].linha || soIssoNaLinha(grupo[0].linha, de, ate),
         fimHora: hora ? hora.ate : null,
         fimHumor: humor ? humor.ate : null,
       })

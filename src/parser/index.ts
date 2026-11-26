@@ -1,22 +1,29 @@
 // Parser do texto do dia. Função pura: só lê o texto, não mexe em tela nem em armazenamento.
 
+/** Onde um comando está dentro da linha: da coluna `de` até a coluna `ate` (sem incluir). */
+export type Colunas = { de: number; ate: number }
+
 export type Bloco = {
   /** "HH:MM" quando o bloco foi aberto por `hora/`; null no bloco sem horário. */
   hora: string | null
   /** Humor de 1 a 5, ou null se o bloco não tem humor. */
   humor: number | null
-  /** Linha (começando em 0) onde o bloco começa. */
+  /** Linha (começando em 0) onde o bloco começa. Num bloco com hora, é a linha do `hora/`. */
   linhaInicial: number
-  /** Linha (começando em 0) da linha `humor/N` deste bloco, ou null. */
+  /** Linha (começando em 0) do `humor/N` deste bloco, ou null. */
   linhaHumor: number | null
+  /** Posição do `hora/` dentro da linha inicial, ou null. */
+  colunasHora: Colunas | null
+  /** Posição do `humor/` dentro da linha do humor, ou null. */
+  colunasHumor: Colunas | null
   /** true se o bloco foi aberto por um segundo `humor/` sem `hora/` entre eles. */
   abertoPorHumorDuplicado: boolean
 }
 
-export type Aviso = {
+export type Aviso = Colunas & {
   /** Linha (começando em 0) a que o aviso se refere. */
   linha: number
-  tipo: 'humor-invalido' | 'hora-invalida' | 'humor-duplicado' | 'humor-no-futuro'
+  tipo: 'humor-invalido' | 'hora-invalida' | 'hora-repetida' | 'humor-duplicado' | 'humor-no-futuro'
   mensagem: string
 }
 
@@ -25,11 +32,31 @@ export type Dia = {
   avisos: Aviso[]
 }
 
-// O comando fica no começo da linha. Maiúsculas são aceitas porque o teclado
-// do celular costuma capitalizar a primeira letra da linha.
-const LINHA_HUMOR = /^\s*humor\/\s*(\S*)/i
-const LINHA_HORA = /^\s*hora\/\s*(\S*)/i
+export type Comando = Colunas & { tipo: 'hora' | 'humor'; valor: string }
+
+// Um comando no começo do que sobrou da linha. Maiúsculas valem, porque o teclado
+// do celular costuma começar a linha com maiúscula. O valor nunca é outro comando:
+// em "hora/ humor/4", o hora/ fica vazio e o humor/4 continua sendo um comando.
+const COMANDO = /^(\s*)(hora|humor)\/\s*(?!(?:hora|humor)\/)(\S*)/i
 const HORARIO = /^([01]?\d|2[0-3]):([0-5]\d)$/
+
+/**
+ * Os comandos de uma linha: o primeiro precisa começar a linha, e cada um dos outros
+ * precisa vir logo depois do anterior. O que vem depois disso é texto comum.
+ */
+export function comandosDaLinha(linha: string): Comando[] {
+  const comandos: Comando[] = []
+  let pos = 0
+  for (;;) {
+    const achado = COMANDO.exec(linha.slice(pos))
+    if (!achado) break
+    const de = pos + achado[1].length
+    const ate = pos + achado[0].length
+    comandos.push({ tipo: achado[2].toLowerCase() as Comando['tipo'], valor: achado[3], de, ate })
+    pos = ate
+  }
+  return comandos
+}
 
 export type OpcoesParse = {
   /** true quando o texto é de um dia que ainda não chegou. Nesses dias, `humor/` é sempre erro. */
@@ -41,45 +68,53 @@ export function parse(texto: string, { diaFuturo = false }: OpcoesParse = {}): D
   const avisos: Aviso[] = []
 
   // O dia sempre começa com um bloco sem horário.
-  const blocos: Bloco[] = [novoBloco(0, null, false)]
+  const blocos: Bloco[] = [novoBloco(0, null, null, false)]
 
   linhas.forEach((linha, i) => {
-    const atual = blocos[blocos.length - 1]
+    const comandos = comandosDaLinha(linha)
+    const avisar = (c: Comando, tipo: Aviso['tipo'], mensagem: string) =>
+      avisos.push({ linha: i, de: c.de, ate: c.ate, tipo, mensagem })
 
-    const hora = LINHA_HORA.exec(linha)
-    if (hora) {
-      const horario = HORARIO.exec(hora[1])
-      if (horario) {
-        const hh = horario[1].padStart(2, '0')
-        blocos.push(novoBloco(i, `${hh}:${horario[2]}`, false))
+    // Primeiro o hora/: os comandos de uma linha valem juntos, então o humor da
+    // mesma linha entra no bloco que o hora/ abre, esteja antes ou depois dele.
+    let abriuBloco = false
+    for (const c of comandos.filter((c) => c.tipo === 'hora')) {
+      const horario = HORARIO.exec(c.valor)
+      if (!horario) {
+        avisar(c, 'hora-invalida', 'Hora inválida. Use hora/HH:MM, por exemplo hora/14:32.')
+      } else if (abriuBloco) {
+        avisar(c, 'hora-repetida', 'Só vale um hora/ por linha.')
       } else {
-        avisos.push({ linha: i, tipo: 'hora-invalida', mensagem: 'Hora inválida. Use hora/HH:MM, por exemplo hora/14:32.' })
+        const hh = horario[1].padStart(2, '0')
+        blocos.push(novoBloco(i, `${hh}:${horario[2]}`, { de: c.de, ate: c.ate }, false))
+        abriuBloco = true
       }
-      return
     }
 
-    const humor = LINHA_HUMOR.exec(linha)
-    if (humor) {
+    for (const c of comandos.filter((c) => c.tipo === 'humor')) {
       if (diaFuturo) {
         // Ninguém registra como se sente num dia que ainda não chegou: o comando não conta como humor.
-        avisos.push({ linha: i, tipo: 'humor-no-futuro', mensagem: 'Não dá para registrar humor num dia que ainda não chegou.' })
-        return
+        avisar(c, 'humor-no-futuro', 'Não dá para registrar humor num dia que ainda não chegou.')
+        continue
       }
-      if (!/^[1-5]$/.test(humor[1])) {
-        avisos.push({ linha: i, tipo: 'humor-invalido', mensagem: 'Humor inválido. Use humor/1 até humor/5.' })
-        return
+      if (!/^[1-5]$/.test(c.valor)) {
+        avisar(c, 'humor-invalido', 'Humor inválido. Use humor/1 até humor/5.')
+        continue
       }
-      const valor = Number(humor[1])
+      const valor = Number(c.valor)
+      const atual = blocos[blocos.length - 1]
       if (atual.humor === null) {
         atual.humor = valor
         atual.linhaHumor = i
+        atual.colunasHumor = { de: c.de, ate: c.ate }
       } else {
         // Dois humores no mesmo bloco sem hora/ entre eles: o segundo abre um bloco novo sem horário.
-        const novo = novoBloco(i, null, true)
+        const novo = novoBloco(i, null, null, true)
         novo.humor = valor
         novo.linhaHumor = i
+        novo.colunasHumor = { de: c.de, ate: c.ate }
         blocos.push(novo)
-        avisos.push({ linha: i, tipo: 'humor-duplicado', mensagem: 'Já havia um humor neste bloco. Este abriu um bloco novo, sem horário.' })
+        avisar(c, 'humor-duplicado', 'Já havia um humor neste bloco. Este abriu um bloco novo, sem horário.')
       }
     }
   })
@@ -96,6 +131,11 @@ export function blocoDaLinha(blocos: Bloco[], linha: number): Bloco {
   return escolhido
 }
 
-function novoBloco(linhaInicial: number, hora: string | null, abertoPorHumorDuplicado: boolean): Bloco {
-  return { hora, humor: null, linhaInicial, linhaHumor: null, abertoPorHumorDuplicado }
+function novoBloco(
+  linhaInicial: number,
+  hora: string | null,
+  colunasHora: Colunas | null,
+  abertoPorHumorDuplicado: boolean,
+): Bloco {
+  return { hora, humor: null, linhaInicial, linhaHumor: null, colunasHora, colunasHumor: null, abertoPorHumorDuplicado }
 }

@@ -64,6 +64,34 @@ describe('etiquetas: o que vira etiqueta', () => {
   })
 })
 
+describe('etiquetas: vários comandos na mesma linha', () => {
+  it('hora/14:30 humor/5 sozinhos na linha viram uma fileira só', () => {
+    expect(calcularTrechos('hora/14:30 humor/5\nalmocei', semCursor)).toEqual([
+      { tipo: 'etiqueta', de: 0, ate: 18, hora: '14:30', humor: 5, linhaInteira: true, fimHora: 10, fimHumor: 18 },
+    ])
+  })
+
+  it('com texto depois, a fileira fica no começo da linha e o texto segue ao lado', () => {
+    expect(calcularTrechos('hora/14:30 humor/5 almocei fora', semCursor)).toEqual([
+      expect.objectContaining({ de: 0, ate: 18, hora: '14:30', humor: 5, linhaInteira: false }),
+    ])
+  })
+
+  it('na ordem invertida, a fileira mostra a hora primeiro do mesmo jeito', () => {
+    expect(calcularTrechos('humor/5 hora/14:30', semCursor)).toEqual([
+      expect.objectContaining({ de: 0, ate: 18, hora: '14:30', humor: 5, fimHora: 18, fimHumor: 7 }),
+    ])
+  })
+
+  it('um comando inválido no meio separa as etiquetas e continua visível como texto', () => {
+    const trechos = calcularTrechos('hora/14:30 humor/7 humor/4', semCursor)
+    expect(trechos.map((t) => [t.de, t.ate])).toEqual([
+      [0, 10],
+      [19, 26],
+    ])
+  })
+})
+
 describe('etiquetas: cursor em cima do comando', () => {
   const texto = 'hora/08:30\nhumor/5\nO dia' // a fileira vai de 0 a 18
 

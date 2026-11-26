@@ -114,6 +114,65 @@ describe('parse: comandos inválidos', () => {
   })
 })
 
+describe('parse: vários comandos na mesma linha', () => {
+  it('hora/14:30 humor/5 vale como os dois comandos, num bloco só', () => {
+    const { blocos, avisos } = parse('hora/14:30 humor/5')
+    expect(blocos).toHaveLength(2)
+    expect(blocos[1]).toMatchObject({ hora: '14:30', humor: 5, linhaInicial: 0, linhaHumor: 0 })
+    expect(avisos).toEqual([])
+  })
+
+  it('o texto depois dos comandos é texto comum', () => {
+    const { blocos, avisos } = parse('hora/14:30 humor/5 almocei fora')
+    expect(blocos[1]).toMatchObject({ hora: '14:30', humor: 5 })
+    expect(avisos).toEqual([])
+  })
+
+  it('a ordem não importa: humor/5 hora/14:30 é o mesmo bloco', () => {
+    const { blocos } = parse('acordei\nhumor/5 hora/14:30')
+    expect(blocos.map((b) => [b.hora, b.humor])).toEqual([
+      [null, null],
+      ['14:30', 5],
+    ])
+  })
+
+  it('comando no meio de uma frase continua sendo texto', () => {
+    const { blocos, avisos } = parse('hora/14:30 almocei e humor/5')
+    expect(blocos[1]).toMatchObject({ hora: '14:30', humor: null })
+    expect(avisos).toEqual([])
+  })
+
+  it('guarda a posição de cada comando dentro da linha', () => {
+    const { blocos } = parse('  hora/14:30  humor/5 texto')
+    expect(blocos[1].colunasHora).toEqual({ de: 2, ate: 12 })
+    expect(blocos[1].colunasHumor).toEqual({ de: 14, ate: 21 })
+  })
+
+  it('só vale um hora/ por linha: o segundo ganha aviso', () => {
+    const { blocos, avisos } = parse('hora/14:30 hora/15:00')
+    expect(blocos.map((b) => b.hora)).toEqual([null, '14:30'])
+    expect(avisos).toEqual([expect.objectContaining({ linha: 0, tipo: 'hora-repetida', de: 11, ate: 21 })])
+  })
+
+  it('um hora/ vazio não engole o humor/ que vem depois', () => {
+    const { blocos, avisos } = parse('hora/ humor/4')
+    expect(blocos[0].humor).toBe(4)
+    expect(avisos).toEqual([expect.objectContaining({ tipo: 'hora-invalida', de: 0, ate: 5 })])
+  })
+
+  it('comando inválido no meio da fileira ganha aviso, e os outros valem', () => {
+    const { blocos, avisos } = parse('hora/14:30 humor/7')
+    expect(blocos[1]).toMatchObject({ hora: '14:30', humor: null })
+    expect(avisos).toEqual([expect.objectContaining({ tipo: 'humor-invalido', de: 11, ate: 18 })])
+  })
+
+  it('dois humores na mesma linha seguem o caso limite: o segundo abre bloco sem horário', () => {
+    const { blocos, avisos } = parse('humor/2 humor/5')
+    expect(blocos.map((b) => b.humor)).toEqual([2, 5])
+    expect(avisos).toEqual([expect.objectContaining({ tipo: 'humor-duplicado' })])
+  })
+})
+
 describe('parse: dia futuro', () => {
   it('humor/ é sempre erro e não conta como humor', () => {
     const { blocos, avisos } = parse('hora/09:00\nhumor/4', { diaFuturo: true })
