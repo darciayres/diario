@@ -20,7 +20,7 @@ export type ControleDoEditor = {
   /** Aplica uma edição a partir do texto e do cursor atuais, como se a pessoa tivesse escrito. */
   editar: (calcular: (texto: string, cursor: number) => Edicao) => void
   /**
-   * Passa para o modo escrever, com o cursor no fim do texto.
+   * Passa para o modo escrever, com o cursor no fim da última coisa escrita.
    * Precisa ser chamado dentro do toque da pessoa: só assim o celular deixa o teclado subir.
    */
   escrever: () => void
@@ -59,6 +59,12 @@ const ehTelaDeToque = () => window.matchMedia?.('(pointer: coarse)').matches ?? 
 
 // Depois que o texto perde o foco, quanto esperar (em milissegundos) antes de voltar para o modo ler.
 const ESPERA_SEM_FOCO = 300
+
+/**
+ * Onde termina a última coisa escrita: o fim do texto, sem contar linhas vazias e espaços
+ * do final. É ali que o cursor vai ao entrar no modo escrever.
+ */
+const fimDoEscrito = (texto: string) => texto.trimEnd().length
 
 /** A parte da configuração que muda entre ler e escrever. */
 const configuracaoDoModo = (modo: Modo) => [EditorView.editable.of(modo === 'escrever'), modoLeitura.of(modo === 'ler')]
@@ -102,7 +108,7 @@ export function Editor({ texto, aoMudar, modo, aoMudarModo, ref }: Props) {
       state: EditorState.create({
         doc: textoInicial,
         // Ao abrir, o cursor fica no fim do texto, pronto para continuar o dia.
-        selection: { anchor: textoInicial.length },
+        selection: { anchor: fimDoEscrito(textoInicial) },
         extensions: [
           history(),
           keymap.of([...defaultKeymap, ...historyKeymap]),
@@ -124,10 +130,12 @@ export function Editor({ texto, aoMudar, modo, aoMudarModo, ref }: Props) {
           EditorView.domEventHandlers({
             click(evento, view) {
               if (!view.state.facet(modoLeitura)) return false
-              const pos =
+              const tocado =
                 posicaoDoToqueNaEtiqueta(evento, view) ??
                 view.posAtCoords({ x: evento.clientX, y: evento.clientY }) ??
                 view.state.doc.length
+              // Tocou no espaço vazio depois do texto: o cursor vai para o fim da última coisa escrita.
+              const pos = Math.min(tocado, fimDoEscrito(view.state.doc.toString()))
               evento.preventDefault()
               entrarNaEscrita(view, pos)
               return true
@@ -191,7 +199,7 @@ export function Editor({ texto, aoMudar, modo, aoMudarModo, ref }: Props) {
     },
     escrever() {
       const view = vista.current
-      if (view) entrarNaEscrita(view, view.state.doc.length)
+      if (view) entrarNaEscrita(view, fimDoEscrito(view.state.doc.toString()))
     },
     mostrarCursor() {
       const view = vista.current

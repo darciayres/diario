@@ -12,6 +12,10 @@
 .hoje__rolagem {
   height: 100%;
   overflow-y: auto;
+  /* O texto esmaece ao chegar no alto da tela, em vez de ser cortado seco pela faixa do
+     relógio, que o Safari desenha por conta própria (fora do app instalado). */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 calc(env(safe-area-inset-top) + 32px));
+  mask-image: linear-gradient(to bottom, transparent 0, #000 calc(env(safe-area-inset-top) + 32px));
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
 }

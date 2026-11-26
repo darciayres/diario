@@ -154,6 +154,20 @@ describe('Tela Hoje', () => {
     expect(textoDo(await acharEditor())).toBe('acordei cedo\nhumor/4')
   })
 
+  it('ao passar para o modo escrever, o cursor vai para o fim da última coisa escrita (não para as linhas vazias)', async () => {
+    await salvarDia(HOJE, 'acordei cedo\nfui ao parque\n\n\n')
+    const editor = await abrirEscrevendo()
+    expect(vistaDe(editor).state.selection.main.head).toBe('acordei cedo\nfui ao parque'.length)
+  })
+
+  it('tocar no espaço vazio depois do texto também leva ao fim da última coisa escrita', async () => {
+    await salvarDia(HOJE, 'acordei cedo\n\n\n')
+    render(<Hoje />)
+    const editor = await acharEditor()
+    fireEvent.click(editor)
+    expect(vistaDe(editor).state.selection.main.head).toBe('acordei cedo'.length)
+  })
+
   it('abre com o cursor no fim do texto (assim as etiquetas aparecem)', async () => {
     await salvarDia(HOJE, 'hora/08:30 humor/4\nacordei cedo')
     render(<Hoje />)

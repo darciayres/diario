@@ -21,7 +21,7 @@ type Props = {
 
 // No Safari do iPhone (fora do app instalado), a "pílula" do endereço fica por cima do conteúdo,
 // logo acima do teclado. Esta folga deixa a barra de comandos acima dela.
-const FOLGA_DO_SAFARI = 48
+const FOLGA_DO_SAFARI = 16
 
 function ehSafariDoIphone(): boolean {
   const ehIphone = /iP(hone|ad|od)/.test(navigator.userAgent)
