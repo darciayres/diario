@@ -47,7 +47,7 @@ Página **Mobile Prototype** do arquivo [DINT2-AV02](https://www.figma.com/desig
 ### Fase 0 — Base
 - [x] 0.1 Trocar a tela de exemplo por uma página "Diário" simples.
 - [x] 0.2 Trazer do Figma as cores (Roles, modo Claro, e `humor/1` a `humor/5`), as fontes e as sombras para variáveis CSS.
-- [ ] 0.3 Publicar na Vercel ou na Netlify e anotar o endereço no README.
+- [x] 0.3 Publicar na Vercel ou na Netlify e anotar o endereço no README.
 
 ### Fase 1 — Texto e parser
 > A branch `prova-de-conceito` já tem um parser, os comandos do editor e o armazenamento, com testes. Reaproveitar o que estiver de acordo com o `PRODUTO.md` (lá os dados ficam no localStorage; aqui, no IndexedDB).

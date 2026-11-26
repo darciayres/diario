@@ -6,6 +6,8 @@ Um aplicativo de **diário pessoal**, open source, que funciona no celular e no 
 
 Projeto da segunda unidade da disciplina, feito em grupo a partir do design system criado no Figma na primeira unidade.
 
+**Acesse:** <https://diario-opal-delta.vercel.app>. O site é atualizado sozinho a cada envio para a branch `main`.
+
 ## Privacidade
 
 Tudo o que você escreve fica **somente no seu aparelho**. Não há servidor, conta nem login. Por enquanto os dados **não são criptografados**: quem tiver acesso ao aparelho desbloqueado pode ler o diário.
