@@ -8,9 +8,10 @@ import iconeHumor from '../assets/icones/sentiment_satisfied_alt.svg'
 import { NOMES_DO_HUMOR } from '../humor.ts'
 import './BarraDeComandos.css'
 import { naoTirarFoco } from './naoTirarFoco.ts'
-import { useEspacoDoTeclado } from './useEspacoDoTeclado.ts'
 
 type Props = {
+  /** true quando o teclado do celular está aberto. */
+  tecladoAberto: boolean
   aoInserirHora: () => void
   aoEscolherHumor: (humor: number) => void
   /** Devolve o foco ao texto depois de um toque (garantia extra para o teclado não descer). */
@@ -18,16 +19,25 @@ type Props = {
 }
 
 
-export function BarraDeComandos({ aoInserirHora, aoEscolherHumor, aoTocar }: Props) {
+// No Safari do iPhone (fora do app instalado), a "pílula" do endereço fica por cima do conteúdo,
+// logo acima do teclado. Esta folga deixa a barra de comandos acima dela.
+const FOLGA_DO_SAFARI = 48
+
+function ehSafariDoIphone(): boolean {
+  const ehIphone = /iP(hone|ad|od)/.test(navigator.userAgent)
+  const instalado = window.matchMedia?.('(display-mode: standalone)').matches ?? false
+  return ehIphone && !instalado
+}
+
+export function BarraDeComandos({ tecladoAberto, aoInserirHora, aoEscolherHumor, aoTocar }: Props) {
   const [humorAberto, setHumorAberto] = useState(false)
   // A setinha recolhe os botões e mostra de novo (animação do Figma: 0,3 s).
   const [recolhida, setRecolhida] = useState(false)
-  const espacoDoTeclado = useEspacoDoTeclado()
 
   return (
     <div
       className="barra-comandos"
-      style={{ '--espaco-do-teclado': `${espacoDoTeclado}px` } as CSSProperties}
+      style={tecladoAberto && ehSafariDoIphone() ? ({ '--folga-inferior': `${FOLGA_DO_SAFARI}px` } as CSSProperties) : undefined}
       onKeyDown={(e) => e.key === 'Escape' && setHumorAberto(false)}
     >
       {/* Fica sempre na página para poder aparecer e sumir com animação; fechado, não recebe toques. */}

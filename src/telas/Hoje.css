@@ -1,38 +1,54 @@
+/* A tela ocupa exatamente a parte visível (que encolhe quando o teclado abre) e não rola;
+   quem rola é a área do texto, por dentro. */
 .hoje {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: var(--altura-visivel, 100dvh);
+  overflow: hidden;
+}
+
+.hoje__rolagem {
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.hoje__coluna {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 4px;
   max-width: 393px;
-  /* "svh": a altura da tela com as barras do navegador à mostra. Assim o aviso do fim
-     da página fica visível no iPhone, acima da barra flutuante do Safari. */
-  min-height: 100vh;
-  min-height: 100svh;
+  min-height: 100%;
   margin: 0 auto;
-  padding: 0 20px calc(16px + env(safe-area-inset-bottom));
+  /* Em cima: a área do relógio e da bateria, mais a altura do botão ler/escrever.
+     Embaixo: a área da barra de gestos do iPhone. */
+  padding: calc(env(safe-area-inset-top) + 76px) 20px calc(16px + env(safe-area-inset-bottom));
 }
 
 /* No modo escrever, espaço embaixo para a barra de comandos não cobrir o fim do texto. */
-.hoje--escrever {
+.hoje--escrever .hoje__coluna {
   padding-bottom: 96px;
 }
 
-/* Linha de botões do topo (Figma: "botões superiores"): fica presa no alto ao rolar,
-   com o texto de baixo desfocado. O botão da barra lateral entra à esquerda na tarefa 4.1. */
+/* Linha de botões do topo (Figma: "botões superiores"). Sem faixa: só o botão flutua
+   e o texto passa por baixo dele. A área vazia em volta deixa o toque chegar ao texto.
+   O botão da barra lateral entra à esquerda na tarefa 4.1. */
 .hoje__topo {
-  position: sticky;
+  position: absolute;
   top: 0;
+  left: 50%;
   z-index: 5;
+  box-sizing: border-box;
   display: flex;
   justify-content: flex-end;
-  min-height: 56px;
-  margin: 0 -20px;
-  padding: calc(env(safe-area-inset-top) + 12px) 20px 8px;
-  /* Sem faixa: só o botão flutua, e o texto passa por baixo dele ao rolar.
-     A área vazia em volta do botão deixa o toque chegar ao texto. */
+  width: min(100%, 393px);
+  padding: calc(env(safe-area-inset-top) + 12px) 20px 0;
+  transform: translateX(-50%);
   pointer-events: none;
-  /* No iPhone, com o teclado aberto, a tela visível "desliza" para baixo; o topo acompanha. */
-  transform: translateY(var(--deslocamento-da-tela, 0px));
 }
 
 .hoje__topo > * {
