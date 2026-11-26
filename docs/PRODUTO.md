@@ -63,9 +63,15 @@ Regras gerais:
 | 5 | Muito bem |
 
 - Na tela, o humor sempre aparece como **ponto colorido + número + nome** (ex.: "4 · Bem"). Nunca só a cor.
-- Se a pessoa **digita** um segundo `humor/` num bloco que já tem humor, o **editor** insere sozinho `hora/` com a hora atual antes dele, abrindo um bloco novo.
+- Se a pessoa **digita** um segundo `humor/` num bloco que já tem humor, o **editor** insere sozinho `hora/` com a hora atual antes dele, abrindo um bloco novo. Isso só acontece no dia de hoje (veja "Dias que não são hoje").
 - O **botão** de humor age no bloco do cursor: sem humor, insere `humor/N`; com humor, **troca** o número. O botão nunca abre bloco novo.
 - Caso limite: texto colado com dois `humor/` no mesmo bloco, sem `hora/` entre eles. O app não inventa hora: o segundo abre um **bloco novo sem horário**, com aviso discreto.
+
+### Dias que não são hoje
+
+- **Hora:** o botão de hora escreve a hora de agora, o que só faz sentido no dia de hoje. Por isso, em dias passados e futuros, o botão de hora não aparece na barra de comandos, e o app nunca completa um `hora/` vazio com a hora atual. O comando `hora/` digitado vale em qualquer dia: a pessoa pode escrever `hora/09:15` para contar algo que aconteceu, ou vai acontecer, nessa hora.
+- **Humor em dias futuros:** `humor/` é sempre um erro, porque ninguém registra como se sente num dia que ainda não chegou. O comando fica com destaque vermelho de erro e não conta como humor. O botão de humor não aparece na barra de comandos.
+- **Humor em dias passados:** o botão de humor não aparece na barra de comandos, mas o `humor/` digitado continua valendo. Se a pessoa digita um segundo `humor/` num bloco que já tem humor, o editor abre um **bloco novo sem hora** (como no caso limite do texto colado), em vez de inserir a hora atual.
 
 ### Terapia
 
@@ -104,7 +110,7 @@ Regras gerais:
 - **Centralizadora:** uma tela de cards, aberta pelo botão Central. Os cards são Tópicos de terapia, Calendário e Estatísticas. No MVP entra só o card de Tópicos de terapia, com o botão de novo lembrete.
 - Ao abrir o app, o cursor já está no dia de hoje, sem telas no meio.
 - Cada dia tem dois modos, que se alternam por um botão: **escrever** (Escritor) e **ler** (Leitor).
-- A barra de comandos do Escritor fica **fixa**, logo acima do teclado. Os botões dela **só escrevem o comando onde está o cursor** (decidido em 26/11/2026). A exceção é o de humor, que abre a escolha de 1 a 5. Os pop-ups de terapia e de lembrete não abrem pela barra: abrem pela Centralizadora e pela barra lateral.
+- A barra de comandos do Escritor fica **fixa**, logo acima do teclado. Os botões dela **só escrevem o comando onde está o cursor** (decidido em 26/11/2026). A exceção é o de humor, que abre a escolha de 1 a 5. Os pop-ups de terapia e de lembrete não abrem pela barra: abrem pela Centralizadora e pela barra lateral. Em dias passados e futuros, alguns botões somem (veja "Dias que não são hoje").
 - O destaque de um comando (cor `comando/fundo-ativo`) aparece quando a pessoa toca, apaga ou escreve nele.
 
 ## Visual
