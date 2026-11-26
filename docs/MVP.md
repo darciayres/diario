@@ -45,7 +45,7 @@ Página **Mobile Prototype** do arquivo [DINT2-AV02](https://www.figma.com/desig
 ## Tarefas
 
 ### Fase 0 — Base
-- [ ] 0.1 Trocar a tela de exemplo por uma página "Diário" simples.
+- [x] 0.1 Trocar a tela de exemplo por uma página "Diário" simples.
 - [ ] 0.2 Trazer do Figma as cores (Roles, modo Claro, e `humor/1` a `humor/5`), as fontes e as sombras para variáveis CSS.
 - [ ] 0.3 Publicar na Vercel ou na Netlify e anotar o endereço no README.
 
