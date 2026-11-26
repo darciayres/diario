@@ -6,6 +6,7 @@ import { StateField, type EditorState, type Extension } from '@codemirror/state'
 import { Decoration, EditorView, WidgetType, type DecorationSet } from '@codemirror/view'
 import { NOMES_DO_HUMOR } from '../humor.ts'
 import { parse } from '../parser/index.ts'
+import { modoLeitura } from './modo.ts'
 
 /** Um pedaço do texto que vira etiqueta, ou que aparece como texto destacado (cursor em cima). */
 export type Trecho =
@@ -165,7 +166,9 @@ const destaque = Decoration.mark({ class: 'comando-ativo' })
 const linhaDeEtiquetas = Decoration.line({ class: 'linha-etiquetas' })
 
 function decorar(state: EditorState): DecorationSet {
-  const trechos = calcularTrechos(state.doc.toString(), state.selection.ranges)
+  // No modo ler, todos os comandos aparecem como etiqueta, esteja o cursor onde estiver.
+  const selecoes = state.facet(modoLeitura) ? [] : state.selection.ranges
+  const trechos = calcularTrechos(state.doc.toString(), selecoes)
   const decoracoes = []
   for (const t of trechos) {
     if (t.tipo === 'ativo') {
@@ -191,13 +194,20 @@ export function posicaoAoTocar(texto: string, inicioDaEtiqueta: number, tocou: '
   return trecho.ate
 }
 
+/** Se o toque foi numa etiqueta, a posição do cursor para ela; senão, null. */
+export function posicaoDoToqueNaEtiqueta(evento: MouseEvent, view: EditorView): number | null {
+  const alvo = evento.target instanceof Element ? evento.target : null
+  const fileira = alvo?.closest('.etiquetas')
+  if (!fileira) return null
+  const tocou = alvo?.closest('.etiqueta--hora') ? 'hora' : alvo?.closest('.etiqueta--humor') ? 'humor' : null
+  return posicaoAoTocar(view.state.doc.toString(), view.posAtDOM(fileira), tocou)
+}
+
 const aoTocarNaEtiqueta = EditorView.domEventHandlers({
   mousedown(evento, view) {
-    const alvo = evento.target instanceof Element ? evento.target : null
-    const fileira = alvo?.closest('.etiquetas')
-    if (!fileira) return false
-    const tocou = alvo?.closest('.etiqueta--hora') ? 'hora' : alvo?.closest('.etiqueta--humor') ? 'humor' : null
-    const pos = posicaoAoTocar(view.state.doc.toString(), view.posAtDOM(fileira), tocou)
+    // No modo ler, quem cuida do toque é o editor (ele passa para o modo escrever).
+    if (view.state.facet(modoLeitura)) return false
+    const pos = posicaoDoToqueNaEtiqueta(evento, view)
     if (pos === null) return false
     evento.preventDefault()
     view.focus()
@@ -211,7 +221,7 @@ export function etiquetas(): Extension {
   return [
     StateField.define<DecorationSet>({
       create: decorar,
-      update: (atual, tr) => (tr.docChanged || tr.selection ? decorar(tr.state) : atual),
+      update: (atual, tr) => (tr.docChanged || tr.selection || tr.reconfigured ? decorar(tr.state) : atual),
       provide: (campo) => EditorView.decorations.from(campo),
     }),
     aoTocarNaEtiqueta,

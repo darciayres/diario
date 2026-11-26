@@ -1,0 +1,63 @@
+/* Botão ler/escrever (Figma: "toggle ler,escrever V3"). */
+
+.alternar-modo {
+  position: relative;
+  display: flex;
+  padding: 4px;
+  border: 1px solid var(--borda-padrao);
+  border-radius: 24px;
+  background: var(--fundo-superficie);
+  box-shadow: var(--sombra-barra);
+}
+
+/* Fundo verde que desliza para o modo escolhido. */
+.alternar-modo__fundo {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 56px;
+  height: 44px;
+  border-radius: 20px;
+  background: var(--acao-primaria);
+  transition: transform 0.3s ease-out;
+}
+
+.alternar-modo--escrever .alternar-modo__fundo {
+  transform: translateX(56px);
+}
+
+.alternar-modo__botao {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  border-radius: 20px;
+  background: transparent;
+  cursor: pointer;
+}
+
+/* As duas cores do ícone ficam uma sobre a outra e trocam com um esmaecimento. */
+.alternar-modo__icone {
+  grid-area: 1 / 1;
+  display: block;
+  transition: opacity 0.3s ease-out;
+}
+
+.alternar-modo__icone--ativo {
+  opacity: 0;
+}
+
+.alternar-modo--ler .alternar-modo__botao--ler .alternar-modo__icone--ativo,
+.alternar-modo--escrever .alternar-modo__botao--escrever .alternar-modo__icone--ativo {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .alternar-modo__fundo,
+  .alternar-modo__icone {
+    transition: none;
+  }
+}

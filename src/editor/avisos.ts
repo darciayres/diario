@@ -6,6 +6,7 @@ import { StateField, type EditorState, type Extension } from '@codemirror/state'
 import { Decoration, EditorView, WidgetType, showTooltip, type Tooltip } from '@codemirror/view'
 import iconeAviso from '../assets/icones/warning_amber.svg'
 import { parse } from '../parser/index.ts'
+import { modoLeitura } from './modo.ts'
 import { foiDigitado } from './regrasDoHumor.ts'
 
 export type Marca = { de: number; ate: number; mensagem: string }
@@ -73,19 +74,21 @@ const linhaEmEdicao = StateField.define<number | null>({
 })
 
 function avisosDoEstado(state: EditorState) {
+  // No modo ler, o texto aparece limpo, sem avisos.
+  if (state.facet(modoLeitura)) return { marcas: [], balao: null }
   const emEdicao = state.field(linhaEmEdicao)
   const linha = emEdicao === null ? null : state.doc.lineAt(emEdicao).number - 1
   return calcularAvisos(state.doc.toString(), state.selection.main.head, linha)
 }
 
-const decoracoes = EditorView.decorations.compute(['doc', 'selection', linhaEmEdicao], (state) =>
+const decoracoes = EditorView.decorations.compute(['doc', 'selection', linhaEmEdicao, modoLeitura], (state) =>
   Decoration.set(
     avisosDoEstado(state).marcas.flatMap((m) => [marcaDeErro.range(m.de, m.ate), icone.range(m.ate)]),
     true,
   ),
 )
 
-const balao = showTooltip.compute(['doc', 'selection', linhaEmEdicao], (state): Tooltip | null => {
+const balao = showTooltip.compute(['doc', 'selection', linhaEmEdicao, modoLeitura], (state): Tooltip | null => {
   const { balao } = avisosDoEstado(state)
   if (!balao) return null
   return {

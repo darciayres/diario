@@ -1,25 +1,39 @@
 // Campo onde a pessoa escreve o dia, feito com o CodeMirror.
 // O texto continua sendo texto puro; o editor só desenha as etiquetas por cima dos comandos.
+// No modo ler, o mesmo editor mostra o texto "polido" e não deixa escrever;
+// tocar no texto passa para o modo escrever, com o cursor onde a pessoa tocou.
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
-import { Annotation, EditorState } from '@codemirror/state'
+import { Annotation, Compartment, EditorState } from '@codemirror/state'
 import { EditorView, keymap, placeholder } from '@codemirror/view'
 import { useEffect, useImperativeHandle, useRef, useState, type Ref } from 'react'
-import type { Edicao } from './comandos.ts'
+import type { Modo } from '../componentes/AlternarModo.tsx'
 import { horaAgora } from '../datas.ts'
 import { avisos } from './avisos.ts'
-import { etiquetas } from './etiquetas.ts'
+import type { Edicao } from './comandos.ts'
+import { etiquetas, posicaoDoToqueNaEtiqueta } from './etiquetas.ts'
+import { modoLeitura } from './modo.ts'
 import { regrasDoHumor } from './regrasDoHumor.ts'
 import './Editor.css'
 
-/** O que a tela pode pedir ao editor (ex.: os botões da barra de comandos). */
+/** O que a tela pode pedir ao editor. */
 export type ControleDoEditor = {
   /** Aplica uma edição a partir do texto e do cursor atuais, como se a pessoa tivesse escrito. */
   editar: (calcular: (texto: string, cursor: number) => Edicao) => void
+  /**
+   * Passa para o modo escrever, com o cursor no fim do texto.
+   * Precisa ser chamado dentro do toque da pessoa: só assim o celular deixa o teclado subir.
+   */
+  escrever: () => void
+  /** Passa para o modo ler (o teclado desce). */
+  ler: () => void
 }
 
 type Props = {
   texto: string
   aoMudar: (texto: string) => void
+  modo: Modo
+  /** Avisa a tela quando o próprio editor muda de modo (ex.: a pessoa tocou no texto no modo ler). */
+  aoMudarModo: (modo: Modo) => void
   ref?: Ref<ControleDoEditor>
 }
 
@@ -36,15 +50,33 @@ const tema = EditorView.theme({
   '.cm-placeholder': { color: 'var(--texto-secundario)' },
 })
 
-export function Editor({ texto, aoMudar, ref }: Props) {
+/** A parte da configuração que muda entre ler e escrever. */
+const configuracaoDoModo = (modo: Modo) => [EditorView.editable.of(modo === 'escrever'), modoLeitura.of(modo === 'ler')]
+
+export function Editor({ texto, aoMudar, modo, aoMudarModo, ref }: Props) {
   const caixa = useRef<HTMLDivElement>(null)
   const vista = useRef<EditorView | null>(null)
+  const compartimentoDoModo = useRef(new Compartment())
   const [textoInicial] = useState(texto)
+  const [modoInicial] = useState(modo)
   const aoMudarAtual = useRef(aoMudar)
+  const aoMudarModoAtual = useRef(aoMudarModo)
 
   useEffect(() => {
     aoMudarAtual.current = aoMudar
+    aoMudarModoAtual.current = aoMudarModo
   })
+
+  /** Liga o modo escrever e põe o cursor em `pos`, tudo de uma vez (o celular exige isso para mostrar o teclado). */
+  function entrarNaEscrita(view: EditorView, pos: number) {
+    view.dispatch({
+      effects: compartimentoDoModo.current.reconfigure(configuracaoDoModo('escrever')),
+      selection: { anchor: pos },
+      scrollIntoView: true,
+    })
+    view.focus()
+    aoMudarModoAtual.current('escrever')
+  }
 
   // Cria o editor uma vez só.
   useEffect(() => {
@@ -64,12 +96,26 @@ export function Editor({ texto, aoMudar, ref }: Props) {
             autocapitalize: 'sentences',
           }),
           tema,
+          compartimentoDoModo.current.of(configuracaoDoModo(modoInicial)),
           // Dia vazio: dica em cinza, que some assim que a pessoa começa a escrever.
           placeholder('Escreva aqui...'),
           etiquetas(),
           avisos(),
           // Por enquanto só existe o dia de hoje; os outros dias chegam na Fase 4.
           regrasDoHumor({ horaAtual: () => horaAgora(), hoje: true }),
+          // No modo ler, tocar no texto passa para o modo escrever, com o cursor onde a pessoa tocou.
+          EditorView.domEventHandlers({
+            click(evento, view) {
+              if (!view.state.facet(modoLeitura)) return false
+              const pos =
+                posicaoDoToqueNaEtiqueta(evento, view) ??
+                view.posAtCoords({ x: evento.clientX, y: evento.clientY }) ??
+                view.state.doc.length
+              evento.preventDefault()
+              entrarNaEscrita(view, pos)
+              return true
+            },
+          }),
           EditorView.updateListener.of((u) => {
             const deFora = u.transactions.some((tr) => tr.annotation(vindoDeFora))
             if (u.docChanged && !deFora) aoMudarAtual.current(u.state.doc.toString())
@@ -78,14 +124,21 @@ export function Editor({ texto, aoMudar, ref }: Props) {
       }),
     })
     vista.current = view
-    // Ao abrir o app, o cursor já está no dia de hoje, no fim do texto.
-    view.focus()
+    if (modoInicial === 'escrever') view.focus()
     view.dispatch({ effects: EditorView.scrollIntoView(textoInicial.length) })
     return () => {
       view.destroy()
       vista.current = null
     }
-  }, [textoInicial])
+  }, [textoInicial, modoInicial])
+
+  // Se o modo mudar por fora (ex.: o teclado desceu), o editor acompanha.
+  useEffect(() => {
+    const view = vista.current
+    if (!view || view.state.facet(modoLeitura) === (modo === 'ler')) return
+    view.dispatch({ effects: compartimentoDoModo.current.reconfigure(configuracaoDoModo(modo)) })
+    if (modo === 'ler') view.contentDOM.blur()
+  }, [modo])
 
   useImperativeHandle(ref, () => ({
     editar(calcular) {
@@ -110,6 +163,17 @@ export function Editor({ texto, aoMudar, ref }: Props) {
       })
       view.focus()
     },
+    escrever() {
+      const view = vista.current
+      if (view) entrarNaEscrita(view, view.state.doc.length)
+    },
+    ler() {
+      const view = vista.current
+      if (!view) return
+      view.dispatch({ effects: compartimentoDoModo.current.reconfigure(configuracaoDoModo('ler')) })
+      view.contentDOM.blur()
+      aoMudarModoAtual.current('ler')
+    },
   }))
 
   // Se o texto mudar por fora, o editor acompanha.
@@ -123,5 +187,5 @@ export function Editor({ texto, aoMudar, ref }: Props) {
     }
   }, [texto])
 
-  return <div ref={caixa} className="editor" />
+  return <div ref={caixa} className={`editor editor--${modo}`} />
 }

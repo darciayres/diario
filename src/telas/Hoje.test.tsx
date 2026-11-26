@@ -12,6 +12,14 @@ const acharEditor = () => screen.findByRole('textbox', { name: 'Texto do dia' })
 const vistaDe = (editor: HTMLElement) => EditorView.findFromDOM(editor)!
 const textoDo = (editor: HTMLElement) => vistaDe(editor).state.doc.toString()
 
+/** Abre a tela e passa para o modo escrever pelo botão do topo. */
+async function abrirEscrevendo() {
+  render(<Hoje />)
+  const editor = await acharEditor()
+  fireEvent.click(screen.getByRole('button', { name: 'Escrever' }))
+  return editor
+}
+
 /** Troca o texto do editor como se a pessoa tivesse digitado. */
 function escrever(editor: HTMLElement, texto: string) {
   const vista = vistaDe(editor)
@@ -42,9 +50,69 @@ describe('Tela Hoje', () => {
     expect(titulo).toHaveTextContent('21 de Outubro')
   })
 
-  it('abre com o cursor no editor', async () => {
+  it('abre no modo ler: sem cursor e sem barra de comandos', async () => {
     render(<Hoje />)
-    expect(await acharEditor()).toHaveFocus()
+    const editor = await acharEditor()
+    expect(editor).not.toHaveFocus()
+    expect(editor).toHaveAttribute('contenteditable', 'false')
+    expect(screen.getByRole('button', { name: 'Ler' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.queryByRole('toolbar', { name: 'Comandos' })).not.toBeInTheDocument()
+  })
+
+  it('o botão Escrever passa para o modo escrever, com o cursor no fim do texto', async () => {
+    await salvarDia(HOJE, 'acordei cedo')
+    const editor = await abrirEscrevendo()
+    expect(editor).toHaveFocus()
+    expect(editor).toHaveAttribute('contenteditable', 'true')
+    expect(vistaDe(editor).state.selection.main.head).toBe('acordei cedo'.length)
+    expect(screen.getByRole('button', { name: 'Escrever' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('toolbar', { name: 'Comandos' })).toBeInTheDocument()
+  })
+
+  it('o botão Ler volta para o modo ler e esconde a barra', async () => {
+    const editor = await abrirEscrevendo()
+    fireEvent.click(screen.getByRole('button', { name: 'Ler' }))
+    expect(editor).toHaveAttribute('contenteditable', 'false')
+    expect(editor).not.toHaveFocus()
+    expect(screen.queryByRole('toolbar', { name: 'Comandos' })).not.toBeInTheDocument()
+  })
+
+  it('tocar no texto, no modo ler, passa para o modo escrever', async () => {
+    await salvarDia(HOJE, 'acordei cedo')
+    render(<Hoje />)
+    const editor = await acharEditor()
+    fireEvent.click(editor)
+    expect(editor).toHaveAttribute('contenteditable', 'true')
+    expect(editor).toHaveFocus()
+    expect(screen.getByRole('toolbar', { name: 'Comandos' })).toBeInTheDocument()
+  })
+
+  it('no celular, fechar o teclado volta para o modo ler', async () => {
+    // Simula a área visível da tela de um celular, que encolhe quando o teclado sobe.
+    const areaVisivel = Object.assign(new EventTarget(), { height: window.innerHeight, offsetTop: 0 })
+    Object.defineProperty(window, 'visualViewport', { value: areaVisivel, configurable: true })
+    const mudarTeclado = (altura: number) =>
+      act(() => {
+        areaVisivel.height = window.innerHeight - altura
+        areaVisivel.dispatchEvent(new Event('resize'))
+      })
+    try {
+      const editor = await abrirEscrevendo()
+      mudarTeclado(300) // o teclado sobe
+      expect(editor).toHaveAttribute('contenteditable', 'true')
+      mudarTeclado(0) // o teclado desce
+      expect(editor).toHaveAttribute('contenteditable', 'false')
+      expect(screen.getByRole('button', { name: 'Ler' })).toHaveAttribute('aria-pressed', 'true')
+    } finally {
+      Object.defineProperty(window, 'visualViewport', { value: undefined, configurable: true })
+    }
+  })
+
+  it('no modo ler, os comandos aparecem como etiquetas, mesmo com o cursor em cima', async () => {
+    await salvarDia(HOJE, 'hora/08:30 humor/4')
+    render(<Hoje />)
+    const editor = await acharEditor()
+    expect(editor.querySelector('.etiqueta--hora')).toHaveTextContent('08:30')
   })
 
   it('mostra o texto que já estava salvo', async () => {
@@ -118,8 +186,7 @@ describe('Tela Hoje', () => {
   })
 
   it('a barra de comandos mostra só os botões de hora e humor', async () => {
-    render(<Hoje />)
-    await acharEditor()
+    await abrirEscrevendo()
     const barra = screen.getByRole('toolbar', { name: 'Comandos' })
     expect(within(barra).getAllByRole('button').map((b) => b.getAttribute('aria-label'))).toEqual([
       'Inserir a hora atual',
@@ -128,16 +195,14 @@ describe('Tela Hoje', () => {
   })
 
   it('o botão de hora escreve a hora atual no texto', async () => {
-    render(<Hoje />)
-    const editor = await acharEditor()
+    const editor = await abrirEscrevendo()
     fireEvent.click(screen.getByRole('button', { name: 'Inserir a hora atual' }))
     expect(textoDo(editor)).toBe('hora/09:30\n')
     await waitFor(async () => expect(await carregarDia(HOJE)).toBe('hora/09:30\n'))
   })
 
   it('o botão de humor abre o pop-up de 1 a 5, e escolher escreve o humor', async () => {
-    render(<Hoje />)
-    const editor = await acharEditor()
+    const editor = await abrirEscrevendo()
     fireEvent.click(screen.getByRole('button', { name: 'Escolher o humor' }))
     const popup = screen.getByRole('group', { name: 'Escolha o humor' })
     expect(within(popup).getAllByRole('button')).toHaveLength(5)
@@ -148,16 +213,14 @@ describe('Tela Hoje', () => {
 
   it('o humor vai para a linha do hora/ quando o bloco ainda não tem humor', async () => {
     await salvarDia(HOJE, 'hora/08:00\nacordei cedo')
-    render(<Hoje />)
-    const editor = await acharEditor()
+    const editor = await abrirEscrevendo()
     fireEvent.click(screen.getByRole('button', { name: 'Escolher o humor' }))
     fireEvent.click(screen.getByRole('button', { name: '5 · Muito bem' }))
     expect(textoDo(editor)).toBe('hora/08:00 humor/5\nacordei cedo')
   })
 
   it('a setinha recolhe os botões e mostra de novo', async () => {
-    render(<Hoje />)
-    await acharEditor()
+    await abrirEscrevendo()
     const setinha = screen.getByRole('button', { name: 'Recolher a barra de comandos' })
     fireEvent.click(setinha)
     expect(screen.queryByRole('toolbar', { name: 'Comandos' })).not.toBeInTheDocument()
@@ -167,8 +230,7 @@ describe('Tela Hoje', () => {
   })
 
   it('recolher a barra fecha o pop-up de humor', async () => {
-    render(<Hoje />)
-    await acharEditor()
+    await abrirEscrevendo()
     fireEvent.click(screen.getByRole('button', { name: 'Escolher o humor' }))
     fireEvent.click(screen.getByRole('button', { name: 'Recolher a barra de comandos' }))
     expect(screen.queryByRole('group', { name: 'Escolha o humor' })).not.toBeInTheDocument()
@@ -190,8 +252,7 @@ describe('Tela Hoje', () => {
     const esperarArrumar = () => act(async () => {})
 
     it('no começo do dia, ganha a hora atual quando o cursor sai da linha', async () => {
-      render(<Hoje />)
-      const editor = await acharEditor()
+      const editor = await abrirEscrevendo()
       digitar(editor, 'acordei cedo\nhumor/4')
       await esperarArrumar()
       expect(textoDo(editor)).toBe('acordei cedo\nhumor/4') // ainda escrevendo nessa linha

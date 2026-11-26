@@ -63,7 +63,7 @@ Página **Mobile Prototype** do arquivo [DINT2-AV02](https://www.figma.com/desig
 - [x] 2.6 Texto de exemplo no dia vazio.
 
 ### Fase 3 — Hoje (lendo)
-- [ ] 3.1 Botão de ler/escrever e modo leitura, com os comandos "polidos". No celular, fechar o teclado leva à leitura e tocar no texto volta à escrita.
+- [x] 3.1 Botão de ler/escrever e modo leitura, com os comandos "polidos". No celular, fechar o teclado leva à leitura e tocar no texto volta à escrita.
 
 ### Fase 4 — Barra lateral e outros dias
 - [ ] 4.1 Barra lateral abre e fecha pelo botão.
