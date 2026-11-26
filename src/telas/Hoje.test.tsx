@@ -100,8 +100,14 @@ describe('Tela Hoje', () => {
       const editor = await abrirEscrevendo()
       mudarTeclado(300) // o teclado sobe
       expect(editor).toHaveAttribute('contenteditable', 'true')
-      mudarTeclado(0) // o teclado desce
-      expect(editor).toHaveAttribute('contenteditable', 'false')
+      // Se o teclado só piscar (desce e sobe logo), continua no modo escrever.
+      mudarTeclado(0)
+      mudarTeclado(300)
+      await act(() => new Promise((r) => setTimeout(r, 500)))
+      expect(editor).toHaveAttribute('contenteditable', 'true')
+      // Se o teclado descer de vez, volta para o modo ler.
+      mudarTeclado(0)
+      await waitFor(() => expect(editor).toHaveAttribute('contenteditable', 'false'))
       expect(screen.getByRole('button', { name: 'Ler' })).toHaveAttribute('aria-pressed', 'true')
     } finally {
       Object.defineProperty(window, 'visualViewport', { value: undefined, configurable: true })
@@ -217,6 +223,17 @@ describe('Tela Hoje', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Escolher o humor' }))
     fireEvent.click(screen.getByRole('button', { name: '5 · Muito bem' }))
     expect(textoDo(editor)).toBe('hora/08:00 humor/5\nacordei cedo')
+  })
+
+  it('tocar nos botões da barra não tira o foco do texto (no celular, o teclado não desce)', async () => {
+    await abrirEscrevendo()
+    const barra = screen.getByRole('toolbar', { name: 'Comandos' })
+    for (const botao of within(barra).getAllByRole('button')) {
+      // fireEvent devolve false quando o app cancelou o evento que mudaria o foco.
+      expect(fireEvent.mouseDown(botao)).toBe(false)
+      expect(fireEvent.pointerDown(botao)).toBe(false)
+    }
+    expect(fireEvent.mouseDown(screen.getByRole('button', { name: 'Recolher a barra de comandos' }))).toBe(false)
   })
 
   it('a setinha recolhe os botões e mostra de novo', async () => {

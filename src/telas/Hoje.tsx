@@ -16,6 +16,8 @@ import './Hoje.css'
 // A folga evita confundir com a barra de endereço do navegador aparecendo e sumindo.
 const TECLADO_FECHADO = 80
 const TECLADO_ABERTO = 150
+// Quanto tempo (em milissegundos) o teclado precisa ficar fechado para o dia voltar ao modo ler.
+const ESPERA_TECLADO_FECHADO = 400
 
 export function Hoje() {
   // O dia é fixado ao abrir a tela: se passar da meia-noite com o app aberto,
@@ -31,10 +33,16 @@ export function Hoje() {
   useEffect(() => {
     if (espacoDoTeclado > TECLADO_ABERTO) {
       tecladoEstavaAberto.current = true
-    } else if (espacoDoTeclado < TECLADO_FECHADO && tecladoEstavaAberto.current) {
+      return
+    }
+    if (espacoDoTeclado >= TECLADO_FECHADO || !tecladoEstavaAberto.current) return
+    // Espera um pouco antes de trocar: se o teclado só piscou (ex.: um toque num botão), ele volta
+    // antes disso, e este efeito é cancelado sem mudar de modo.
+    const espera = window.setTimeout(() => {
       tecladoEstavaAberto.current = false
       editor.current?.ler()
-    }
+    }, ESPERA_TECLADO_FECHADO)
+    return () => window.clearTimeout(espera)
   }, [espacoDoTeclado])
 
   function escolherModo(novo: Modo) {
@@ -43,7 +51,7 @@ export function Hoje() {
   }
 
   return (
-    <main className="hoje">
+    <main className={`hoje hoje--${modo}`}>
       <header className="hoje__topo">
         {fase === 'pronto' && <AlternarModo modo={modo} aoEscolher={escolherModo} />}
       </header>
@@ -57,6 +65,7 @@ export function Hoje() {
             <BarraDeComandos
               aoInserirHora={() => editor.current?.editar((t, cursor) => inserirHora(t, cursor, horaAgora()))}
               aoEscolherHumor={(n) => editor.current?.editar((t, cursor) => escreverHumor(t, cursor, n, horaAgora()))}
+              aoTocar={() => editor.current?.focar()}
             />
           )}
         </>

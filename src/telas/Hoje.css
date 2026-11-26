@@ -4,10 +4,17 @@
   flex-direction: column;
   gap: 4px;
   max-width: 393px;
-  min-height: 100dvh;
+  /* "svh": a altura da tela com as barras do navegador à mostra. Assim o aviso do fim
+     da página fica visível no iPhone, acima da barra flutuante do Safari. */
+  min-height: 100vh;
+  min-height: 100svh;
   margin: 0 auto;
-  /* Embaixo, espaço para a barra de comandos não cobrir o fim do texto. */
-  padding: 0 20px 96px;
+  padding: 0 20px calc(16px + env(safe-area-inset-bottom));
+}
+
+/* No modo escrever, espaço embaixo para a barra de comandos não cobrir o fim do texto. */
+.hoje--escrever {
+  padding-bottom: 96px;
 }
 
 /* Linha de botões do topo (Figma: "botões superiores"): fica presa no alto ao rolar,

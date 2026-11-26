@@ -1,23 +1,24 @@
 // Barra de comandos do Escritor ("command bar" no Figma), fixa logo acima do teclado.
 // No MVP ficam só os botões de hora e de humor; sentimento e apelido ficam escondidos,
 // e terapia e lembrete entram nas fases 5 e 6.
-import { useState, type CSSProperties, type PointerEvent } from 'react'
+import { useState, type CSSProperties } from 'react'
 import iconeRecolher from '../assets/icones/chevron_right.svg'
 import iconeHora from '../assets/icones/alarm.svg'
 import iconeHumor from '../assets/icones/sentiment_satisfied_alt.svg'
 import { NOMES_DO_HUMOR } from '../humor.ts'
 import './BarraDeComandos.css'
+import { naoTirarFoco } from './naoTirarFoco.ts'
 import { useEspacoDoTeclado } from './useEspacoDoTeclado.ts'
 
 type Props = {
   aoInserirHora: () => void
   aoEscolherHumor: (humor: number) => void
+  /** Devolve o foco ao texto depois de um toque (garantia extra para o teclado não descer). */
+  aoTocar?: () => void
 }
 
-// Tocar num botão não pode tirar o foco do editor: no celular, isso fecharia o teclado.
-const manterFocoNoEditor = (e: PointerEvent) => e.preventDefault()
 
-export function BarraDeComandos({ aoInserirHora, aoEscolherHumor }: Props) {
+export function BarraDeComandos({ aoInserirHora, aoEscolherHumor, aoTocar }: Props) {
   const [humorAberto, setHumorAberto] = useState(false)
   // A setinha recolhe os botões e mostra de novo (animação do Figma: 0,3 s).
   const [recolhida, setRecolhida] = useState(false)
@@ -43,7 +44,7 @@ export function BarraDeComandos({ aoInserirHora, aoEscolherHumor }: Props) {
             type="button"
             className="humor-popup__celula"
             aria-label={`${n} · ${NOMES_DO_HUMOR[n]}`}
-            onPointerDown={manterFocoNoEditor}
+            {...naoTirarFoco}
             onClick={() => {
               setHumorAberto(false)
               aoEscolherHumor(n)
@@ -67,7 +68,7 @@ export function BarraDeComandos({ aoInserirHora, aoEscolherHumor }: Props) {
             type="button"
             className="barra-comandos__botao"
             aria-label="Inserir a hora atual"
-            onPointerDown={manterFocoNoEditor}
+            {...naoTirarFoco}
             onClick={() => {
               setHumorAberto(false)
               aoInserirHora()
@@ -80,8 +81,11 @@ export function BarraDeComandos({ aoInserirHora, aoEscolherHumor }: Props) {
             className="barra-comandos__botao"
             aria-label="Escolher o humor"
             aria-expanded={humorAberto}
-            onPointerDown={manterFocoNoEditor}
-            onClick={() => setHumorAberto((aberto) => !aberto)}
+            {...naoTirarFoco}
+            onClick={() => {
+              setHumorAberto((aberto) => !aberto)
+              aoTocar?.()
+            }}
           >
             <img src={iconeHumor} alt="" width={24} height={24} />
           </button>
@@ -91,7 +95,7 @@ export function BarraDeComandos({ aoInserirHora, aoEscolherHumor }: Props) {
           className={`barra-comandos__recolher${recolhida ? ' barra-comandos__recolher--recolhida' : ''}`}
           aria-label={recolhida ? 'Mostrar a barra de comandos' : 'Recolher a barra de comandos'}
           aria-expanded={!recolhida}
-          onPointerDown={manterFocoNoEditor}
+          {...naoTirarFoco}
           onClick={() => {
             setHumorAberto(false)
             setRecolhida((r) => !r)

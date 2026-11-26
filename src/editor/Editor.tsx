@@ -26,6 +26,8 @@ export type ControleDoEditor = {
   escrever: () => void
   /** Passa para o modo ler (o teclado desce). */
   ler: () => void
+  /** Devolve o foco ao texto, se estiver no modo escrever (o teclado continua aberto). */
+  focar: () => void
 }
 
 type Props = {
@@ -166,6 +168,10 @@ export function Editor({ texto, aoMudar, modo, aoMudarModo, ref }: Props) {
     escrever() {
       const view = vista.current
       if (view) entrarNaEscrita(view, view.state.doc.length)
+    },
+    focar() {
+      const view = vista.current
+      if (view && !view.state.facet(modoLeitura) && !view.hasFocus) view.focus()
     },
     ler() {
       const view = vista.current

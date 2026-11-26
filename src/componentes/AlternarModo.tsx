@@ -6,6 +6,7 @@ import iconeLer from '../assets/icones/menu_book.svg'
 import iconeEscreverAtivo from '../assets/icones/mode_edit_ativo.svg'
 import iconeEscrever from '../assets/icones/mode_edit.svg'
 import './AlternarModo.css'
+import { naoTirarFoco } from './naoTirarFoco.ts'
 
 export type Modo = 'ler' | 'escrever'
 
@@ -33,8 +34,7 @@ export function AlternarModo({ modo, aoEscolher }: Props) {
         className="alternar-modo__botao alternar-modo__botao--escrever"
         aria-label="Escrever"
         aria-pressed={modo === 'escrever'}
-        // Não tira o foco do editor (no celular, isso fecharia o teclado).
-        onPointerDown={(e) => e.preventDefault()}
+        {...naoTirarFoco}
         onClick={() => aoEscolher('escrever')}
       >
         <img className="alternar-modo__icone" src={iconeEscrever} alt="" width={20} height={20} />
