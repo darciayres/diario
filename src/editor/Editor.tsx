@@ -2,7 +2,7 @@
 // O texto continua sendo texto puro; o editor só desenha as etiquetas por cima dos comandos.
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
 import { Annotation, EditorState } from '@codemirror/state'
-import { EditorView, keymap } from '@codemirror/view'
+import { EditorView, keymap, placeholder } from '@codemirror/view'
 import { useEffect, useRef, useState } from 'react'
 import { etiquetas } from './etiquetas.ts'
 import './Editor.css'
@@ -22,6 +22,7 @@ const tema = EditorView.theme({
   '.cm-scroller': { font: 'var(--tipo-diario)' },
   '.cm-content': { padding: '0', minHeight: '50vh', caretColor: 'var(--texto-principal)' },
   '.cm-line': { padding: '0 4px' },
+  '.cm-placeholder': { color: 'var(--texto-secundario)' },
 })
 
 export function Editor({ texto, aoMudar }: Props) {
@@ -52,6 +53,8 @@ export function Editor({ texto, aoMudar }: Props) {
             autocapitalize: 'sentences',
           }),
           tema,
+          // Dia vazio: dica em cinza, que some assim que a pessoa começa a escrever.
+          placeholder('Escreva aqui...'),
           etiquetas(),
           EditorView.updateListener.of((u) => {
             const deFora = u.transactions.some((tr) => tr.annotation(vindoDeFora))

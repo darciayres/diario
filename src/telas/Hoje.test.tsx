@@ -60,6 +60,19 @@ describe('Tela Hoje', () => {
     expect(vista.state.selection.main.head).toBe('hora/08:30 humor/4\nacordei cedo'.length)
   })
 
+  it('dia vazio mostra a dica "Escreva aqui...", que some ao escrever', async () => {
+    render(<Hoje />)
+    const editor = await acharEditor()
+    expect(editor.parentElement).toHaveTextContent('Escreva aqui...')
+    escrever(editor, 'oi')
+    expect(editor.parentElement).not.toHaveTextContent('Escreva aqui...')
+  })
+
+  it('a dica não entra no texto salvo', async () => {
+    render(<Hoje />)
+    expect(textoDo(await acharEditor())).toBe('')
+  })
+
   it('salva o que a pessoa escreve', async () => {
     render(<Hoje />)
     const editor = await acharEditor()

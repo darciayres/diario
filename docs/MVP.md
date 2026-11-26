@@ -60,7 +60,7 @@ Página **Mobile Prototype** do arquivo [DINT2-AV02](https://www.figma.com/desig
 - [ ] 2.3 Barra de comandos fixa acima do teclado, com os botões de hora e humor (sentimento e apelido ficam escondidos).
 - [ ] 2.4 Pop-up de humor de 1 a 5; o botão escreve o humor como manda o `PRODUTO.md` (na linha do `hora/` ou num bloco novo com a hora atual).
 - [ ] 2.5 Regras do editor para o humor digitado: vai para a linha do `hora/` do bloco; no bloco sem hora, ou num bloco que já tem humor, ganha um `hora/` com a hora atual; aviso de comando inválido.
-- [ ] 2.6 Texto de exemplo no dia vazio.
+- [x] 2.6 Texto de exemplo no dia vazio.
 
 ### Fase 3 — Hoje (lendo)
 - [ ] 3.1 Botão de ler/escrever e modo leitura, com os comandos "polidos".
@@ -96,7 +96,7 @@ Página **Mobile Prototype** do arquivo [DINT2-AV02](https://www.figma.com/desig
 Cada item precisa estar no Figma antes da tarefa que depende dele.
 
 - [ ] Aviso de comando inválido (tarefa 2.5)
-- [ ] Dia vazio com texto de exemplo (2.6)
+- [x] Dia vazio com texto de exemplo (2.6)
 - [ ] Tópico de terapia sendo escrito e já fechado, no Escritor (5.2)
 - [ ] Centralizadora do MVP, só com o card Tópicos de terapia e o botão de novo lembrete (5.4)
 - [ ] Ajustes dos pop-ups de terapia e de lembrete, como pede a nota "ajustar pop-ups" no Figma (5.5 e 6.5)
