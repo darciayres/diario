@@ -43,7 +43,9 @@ Cada dia é **um documento de texto livre**. Humor, hora, lembrete e assuntos pa
 | `apelido/` | `apelido/ o dia do campeonato` | Dá um nome ao dia inteiro | Não |
 
 Regras gerais:
-- Um comando precisa **começar a linha** (espaços antes dele não atrapalham). No meio de uma frase, como em "meu humor/4 hoje", é texto comum.
+- Um comando precisa **começar a linha** ou vir **logo depois de outro comando** (espaços não atrapalham). Assim, `hora/14:30 humor/5` vale como os dois comandos, e `hora/14:30 humor/5 almocei fora` também, com o texto depois. No meio de uma frase, como em "meu humor/4 hoje", é texto comum.
+- Os comandos de uma mesma linha valem juntos: se um deles é `hora/`, todos entram no bloco que ele abre, em qualquer ordem. `humor/5 hora/14:30` é o mesmo que `hora/14:30 humor/5`.
+- O editor só mexe no que a pessoa **digita**. Texto colado fica exatamente como veio.
 - Maiúsculas e minúsculas valem igual: `Humor/4` é o mesmo que `humor/4`, porque o teclado do celular costuma começar a linha com maiúscula.
 - `humor/1` e `humor/ 1` valem os dois.
 - Um comando escrito errado (`humor/7`, `humor/abc`) continua no texto como texto comum e ganha um **aviso discreto** ao lado da linha.
@@ -65,8 +67,15 @@ Regras gerais:
 | 5 | Muito bem |
 
 - Na tela, o humor sempre aparece como **ponto colorido + número + nome** (ex.: "4 · Bem"). Nunca só a cor.
-- Se a pessoa **digita** um segundo `humor/` num bloco que já tem humor, o **editor** insere sozinho `hora/` com a hora atual antes dele, abrindo um bloco novo. Isso só acontece no dia de hoje (veja "Dias que não são hoje").
-- O **botão** de humor age no bloco do cursor: sem humor, insere `humor/N`; com humor, **troca** o número. O botão nunca abre bloco novo.
+- O humor fica sempre **na linha de um `hora/`**: `hora/14:30 humor/4`. Quando a pessoa **digita** um `humor/` e o cursor sai da linha (com Enter, tocando em outro lugar ou saindo do app), o **editor** arruma o texto:
+  - **Bloco com hora e sem humor:** o comando vai para a linha do `hora/` do bloco. Se a linha de onde ele saiu fica vazia, ela some.
+  - **Bloco sem hora** (o começo do dia): o editor escreve `hora/` com a hora atual antes do humor, na mesma linha, abrindo um bloco novo: `hora/09:12 humor/4`.
+  - **Bloco que já tem humor:** o editor faz o mesmo, `hora/` com a hora atual antes do novo humor, abrindo um bloco novo: `hora/15:10 humor/3`.
+  - Os dois últimos casos só acontecem no dia de hoje (veja "Dias que não são hoje").
+- O **botão** de humor age no bloco do cursor e segue a mesma regra do texto digitado:
+  - **Bloco com hora e sem humor:** escreve `humor/N` na linha do `hora/`.
+  - **Bloco sem hora** (o começo do dia), ou **bloco que já tem humor:** abre um bloco novo, numa linha logo abaixo da linha do cursor, com a hora atual e o humor: `hora/15:10 humor/3`. Se a linha do cursor estiver vazia, usa ela mesma.
+  - O botão nunca troca um humor que já existe. Para corrigir, a pessoa toca na etiqueta e muda o número no texto.
 - Caso limite: texto colado com dois `humor/` no mesmo bloco, sem `hora/` entre eles. O app não inventa hora: o segundo abre um **bloco novo sem horário**, com aviso discreto.
 
 ### Dias que não são hoje
