@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { dataDeHoje, tituloDoDia } from './datas.ts'
+import { dataDeHoje, horaAgora, tituloDoDia } from './datas.ts'
+
+describe('horaAgora', () => {
+  it('usa HH:MM com zeros', () => {
+    expect(horaAgora(new Date(2026, 0, 5, 9, 7))).toBe('09:07')
+    expect(horaAgora(new Date(2026, 0, 5, 23, 59))).toBe('23:59')
+  })
+})
 
 describe('dataDeHoje', () => {
   it('usa AAAA-MM-DD com zeros', () => {

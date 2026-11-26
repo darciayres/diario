@@ -7,7 +7,14 @@ export function dataDeHoje(agora: Date = new Date()): string {
   return `${agora.getFullYear()}-${mm}-${dd}`
 }
 
-const comMaiuscula = (texto: string) => texto.charAt(0).toUpperCase() + texto.slice(1)
+/** Hora atual do aparelho, no formato HH:MM. */
+export function horaAgora(agora: Date = new Date()): string {
+  const hh = String(agora.getHours()).padStart(2, '0')
+  const mm = String(agora.getMinutes()).padStart(2, '0')
+  return `${hh}:${mm}`
+}
+
+const comMaiuscula =(texto: string) => texto.charAt(0).toUpperCase() + texto.slice(1)
 
 /** As duas linhas do título do dia, como no Figma. Ex.: { diaDaSemana: "Quarta-feira", diaEMes: "20 de Outubro" }. */
 export function tituloDoDia(data: string): { diaDaSemana: string; diaEMes: string } {

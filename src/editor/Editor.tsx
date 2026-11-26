@@ -3,13 +3,21 @@
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
 import { Annotation, EditorState } from '@codemirror/state'
 import { EditorView, keymap, placeholder } from '@codemirror/view'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useImperativeHandle, useRef, useState, type Ref } from 'react'
+import type { Edicao } from './comandos.ts'
 import { etiquetas } from './etiquetas.ts'
 import './Editor.css'
+
+/** O que a tela pode pedir ao editor (ex.: os botões da barra de comandos). */
+export type ControleDoEditor = {
+  /** Aplica uma edição a partir do texto e do cursor atuais, como se a pessoa tivesse escrito. */
+  editar: (calcular: (texto: string, cursor: number) => Edicao) => void
+}
 
 type Props = {
   texto: string
   aoMudar: (texto: string) => void
+  ref?: Ref<ControleDoEditor>
 }
 
 // Marca as mudanças que vieram de fora do editor, para não avisar de volta como se a pessoa tivesse digitado.
@@ -25,7 +33,7 @@ const tema = EditorView.theme({
   '.cm-placeholder': { color: 'var(--texto-secundario)' },
 })
 
-export function Editor({ texto, aoMudar }: Props) {
+export function Editor({ texto, aoMudar, ref }: Props) {
   const caixa = useRef<HTMLDivElement>(null)
   const vista = useRef<EditorView | null>(null)
   const [textoInicial] = useState(texto)
@@ -73,7 +81,32 @@ export function Editor({ texto, aoMudar }: Props) {
     }
   }, [textoInicial])
 
-  // Se o texto mudar por fora (ex.: um botão), o editor acompanha.
+  useImperativeHandle(ref, () => ({
+    editar(calcular) {
+      const view = vista.current
+      if (!view) return
+      const atual = view.state.doc.toString()
+      const { texto: novo, cursor } = calcular(atual, view.state.selection.main.head)
+      // Troca só o pedaço que mudou, para o desfazer (Ctrl+Z) funcionar direitinho.
+      let inicio = 0
+      while (inicio < atual.length && inicio < novo.length && atual[inicio] === novo[inicio]) inicio++
+      let fimAtual = atual.length
+      let fimNovo = novo.length
+      while (fimAtual > inicio && fimNovo > inicio && atual[fimAtual - 1] === novo[fimNovo - 1]) {
+        fimAtual--
+        fimNovo--
+      }
+      view.dispatch({
+        changes: { from: inicio, to: fimAtual, insert: novo.slice(inicio, fimNovo) },
+        selection: { anchor: cursor },
+        scrollIntoView: true,
+        userEvent: 'input.botao',
+      })
+      view.focus()
+    },
+  }))
+
+  // Se o texto mudar por fora, o editor acompanha.
   useEffect(() => {
     const view = vista.current
     if (view && view.state.doc.toString() !== texto) {

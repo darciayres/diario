@@ -6,7 +6,8 @@
   max-width: 393px;
   min-height: 100dvh;
   margin: 0 auto;
-  padding: calc(env(safe-area-inset-top) + 20px) 20px 24px;
+  /* Embaixo, espaço para a barra de comandos não cobrir o fim do texto. */
+  padding: calc(env(safe-area-inset-top) + 20px) 20px 96px;
 }
 
 .hoje__aviso {

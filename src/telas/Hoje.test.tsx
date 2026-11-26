@@ -1,6 +1,6 @@
 import 'fake-indexeddb/auto'
 import { EditorView } from '@codemirror/view'
-import { act, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { abrirBanco, carregarDia, salvarDia } from '../armazenamento/dia.ts'
 import { Hoje } from './Hoje.tsx'
@@ -115,6 +115,44 @@ describe('Tela Hoje', () => {
     escrever(editor, 'não pode sumir')
     expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível salvar')
     expect(textoDo(editor)).toBe('não pode sumir')
+  })
+
+  it('a barra de comandos mostra só os botões de hora e humor', async () => {
+    render(<Hoje />)
+    await acharEditor()
+    const barra = screen.getByRole('toolbar', { name: 'Comandos' })
+    expect(within(barra).getAllByRole('button').map((b) => b.getAttribute('aria-label'))).toEqual([
+      'Inserir a hora atual',
+      'Escolher o humor',
+    ])
+  })
+
+  it('o botão de hora escreve a hora atual no texto', async () => {
+    render(<Hoje />)
+    const editor = await acharEditor()
+    fireEvent.click(screen.getByRole('button', { name: 'Inserir a hora atual' }))
+    expect(textoDo(editor)).toBe('hora/09:30\n')
+    await waitFor(async () => expect(await carregarDia(HOJE)).toBe('hora/09:30\n'))
+  })
+
+  it('o botão de humor abre o pop-up de 1 a 5, e escolher escreve o humor', async () => {
+    render(<Hoje />)
+    const editor = await acharEditor()
+    fireEvent.click(screen.getByRole('button', { name: 'Escolher o humor' }))
+    const popup = screen.getByRole('group', { name: 'Escolha o humor' })
+    expect(within(popup).getAllByRole('button')).toHaveLength(5)
+    fireEvent.click(within(popup).getByRole('button', { name: '4 · Bem' }))
+    expect(textoDo(editor)).toBe('hora/09:30 humor/4\n')
+    expect(screen.queryByRole('group', { name: 'Escolha o humor' })).not.toBeInTheDocument()
+  })
+
+  it('o humor vai para a linha do hora/ quando o bloco ainda não tem humor', async () => {
+    await salvarDia(HOJE, 'hora/08:00\nacordei cedo')
+    render(<Hoje />)
+    const editor = await acharEditor()
+    fireEvent.click(screen.getByRole('button', { name: 'Escolher o humor' }))
+    fireEvent.click(screen.getByRole('button', { name: '5 · Muito bem' }))
+    expect(textoDo(editor)).toBe('hora/08:00 humor/5\nacordei cedo')
   })
 
   it('avisa que os dados ficam só no aparelho', () => {
