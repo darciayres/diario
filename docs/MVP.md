@@ -1,0 +1,115 @@
+# Diário — MVP
+
+> O objetivo atual. O Claude Code trabalha **uma tarefa por vez**, na ordem abaixo, e marca `[x]` quando termina.
+> As regras do app estão em [`PRODUTO.md`](PRODUTO.md). Nada fora desta lista entra no código sem o grupo decidir.
+
+## Objetivo
+
+Uma primeira versão do Diário **publicada num endereço da internet**, em que dá para:
+
+- escrever o dia de hoje, dividido em momentos com **hora** e **humor**;
+- anotar **assuntos para a terapia**, digitando ou pelo pop-up, e vê-los no card da Centralizadora;
+- deixar **lembretes** em dias futuros, digitando ou pelo pop-up, e vê-los em destaque quando o dia chega;
+- ler e editar outros dias pela **barra lateral**;
+- fechar o app, abrir de novo e o texto continuar lá.
+
+Sem prazo definido: o grupo avança no ritmo possível, fase por fase.
+
+## Pronto quando
+
+- [ ] Dá para escrever no celular, fechar o app, abrir depois e o texto continua lá.
+- [ ] Hora, humor, terapia e lembrete funcionam como está no `PRODUTO.md`.
+- [ ] Os testes do parser passam (`npm test`).
+- [ ] O app está publicado, pode ser instalado na tela inicial e abre sem internet.
+
+## Telas do Figma
+
+Página **Mobile Prototype** do arquivo [DINT2-AV02](https://www.figma.com/design/rXmMMfGfCaPHqB6IY958T3/DINT2-AV02?node-id=1-3). Ao implementar, leia o quadro pelo link.
+
+| Tela | Estado | Quadro |
+|---|---|---|
+| Hoje | Escrevendo | [V2 TELA \| Diário Escritor](https://www.figma.com/design/rXmMMfGfCaPHqB6IY958T3/DINT2-AV02?node-id=988-10939) |
+| Hoje | Lendo | [V2 TELA \| Diário Leitor](https://www.figma.com/design/rXmMMfGfCaPHqB6IY958T3/DINT2-AV02?node-id=988-11229) |
+| Outro dia (passado) | Escrevendo | [V2 TELA \| Diário Escritor passado](https://www.figma.com/design/rXmMMfGfCaPHqB6IY958T3/DINT2-AV02?node-id=988-16791) |
+| Outro dia (passado) | Lendo | [V2 TELA \| Diário Leitor passado](https://www.figma.com/design/rXmMMfGfCaPHqB6IY958T3/DINT2-AV02?node-id=988-16817) |
+| Outro dia (futuro) | Escrevendo | [V2 TELA \| Diário Escritor Futuro](https://www.figma.com/design/rXmMMfGfCaPHqB6IY958T3/DINT2-AV02?node-id=988-16509) |
+| Outro dia (futuro) | Lendo | [V2 TELA \| Diário Leitor futuro](https://www.figma.com/design/rXmMMfGfCaPHqB6IY958T3/DINT2-AV02?node-id=988-15901) |
+| Barra lateral | Aberta | [Componente Sidebar](https://www.figma.com/design/rXmMMfGfCaPHqB6IY958T3/DINT2-AV02?node-id=961-17734) |
+| Centralizadora | Card Tópicos de terapia | [V2 TELA \| Centralizadora](https://www.figma.com/design/rXmMMfGfCaPHqB6IY958T3/DINT2-AV02?node-id=988-11390) |
+| Pop-up | Tópico de terapia | [Pop-up Terapia](https://www.figma.com/design/rXmMMfGfCaPHqB6IY958T3/DINT2-AV02?node-id=893-10793) |
+| Pop-up | Novo lembrete | [Pop-up lembrete](https://www.figma.com/design/rXmMMfGfCaPHqB6IY958T3/DINT2-AV02?node-id=893-10796) |
+| Boas-vindas | Primeira abertura | [Entrada 1 (PG ROBERTO)](https://www.figma.com/design/rXmMMfGfCaPHqB6IY958T3/DINT2-AV02?node-id=352-1882) |
+
+**Componentes:** ficam na seção [Componentes em uso](https://www.figma.com/design/rXmMMfGfCaPHqB6IY958T3/DINT2-AV02?node-id=976-6160) da mesma página. Os principais: Título Dia, Bloco, Hora, Humor, Tag - Tópico de Terapia, command bar, humor_pop-up, toggle ler,escrever V3, Sidebar, Lista de dias (Sidebar), carrosel calendário, Terapia, Pop-up - New (Terapia/Evento), Time Set e Tábua de Humor - Popup Terapia.
+
+## Tarefas
+
+### Fase 0 — Base
+- [ ] 0.1 Trocar a tela de exemplo por uma página "Diário" simples.
+- [ ] 0.2 Trazer do Figma as cores (Roles, modo Claro, e `humor/1` a `humor/5`), as fontes e as sombras para variáveis CSS.
+- [ ] 0.3 Publicar na Vercel ou na Netlify e anotar o endereço no README.
+
+### Fase 1 — Texto e parser
+- [ ] 1.1 Parser de `hora/` e `humor/`, com um teste para cada regra de blocos e humor do `PRODUTO.md`.
+- [ ] 1.2 Guardar e ler o texto de cada dia no aparelho.
+
+### Fase 2 — Hoje (escrevendo)
+- [ ] 2.1 Tela Hoje com o título do dia e o editor de texto.
+- [ ] 2.2 Blocos com as etiquetas de hora e humor.
+- [ ] 2.3 Barra de comandos fixa acima do teclado, com os botões de hora e humor (sentimento e apelido ficam escondidos).
+- [ ] 2.4 Pop-up de humor de 1 a 5; o botão troca o humor quando o bloco já tem um.
+- [ ] 2.5 Segundo `humor/` digitado no mesmo bloco abre um bloco novo com a hora atual; aviso de comando inválido.
+- [ ] 2.6 Texto de exemplo no dia vazio.
+
+### Fase 3 — Hoje (lendo)
+- [ ] 3.1 Botão de ler/escrever e modo leitura, com os comandos "polidos".
+
+### Fase 4 — Barra lateral e outros dias
+- [ ] 4.1 Barra lateral abre e fecha pelo botão.
+- [ ] 4.2 Lista de dias com registro; tocar num dia abre esse dia.
+- [ ] 4.3 Faixa da semana; abrir dias passados e futuros por ela.
+- [ ] 4.4 Título do dia com "Ontem", "Daqui a 3 dias" e assim por diante.
+
+### Fase 5 — Terapia
+- [ ] 5.1 Parser de `terapia/`, com testes.
+- [ ] 5.2 No editor: texto em outra cor, fechamento com dois Enters e botão de terapia na barra, que só escreve `terapia/` onde está o cursor.
+- [ ] 5.3 Etiqueta "Tópico de terapia" no modo leitura.
+- [ ] 5.4 Centralizadora com o card Tópicos de terapia: lista dos abertos e marcar como concluído (vira `terapia(F)/`). Abre pelo botão Central da barra lateral.
+- [ ] 5.5 Pop-up "Tópico de terapia", aberto pelo card da Centralizadora: ao salvar, escreve o momento no texto de hoje, no formato do `PRODUTO.md`.
+
+### Fase 6 — Lembrete
+- [ ] 6.1 Parser de `lembrete/`, com testes, e botão de lembrete na barra, que só escreve `lembrete/` onde está o cursor.
+- [ ] 6.2 Dia futuro vazio com a dica do `lembrete/`.
+- [ ] 6.3 Quando o dia chega, o lembrete aparece em destaque no topo de Hoje.
+- [ ] 6.4 Marca de lembrete na faixa da semana.
+- [ ] 6.5 Pop-up "Novo lembrete", aberto pela Centralizadora e pelo botão de lembrete da barra lateral: ao salvar, escreve o lembrete no dia escolhido, no formato do `PRODUTO.md`.
+
+### Fase 7 — Fechamento
+- [ ] 7.1 Boas-vindas na primeira abertura.
+- [ ] 7.2 Tela Sobre e privacidade (repositório, licença, sem criptografia, dados só no aparelho).
+- [ ] 7.3 App instalável e funcionando sem internet.
+- [ ] 7.4 README atualizado e versão final publicada.
+
+## Falta desenhar no Figma
+
+Cada item precisa estar no Figma antes da tarefa que depende dele.
+
+- [ ] Aviso de comando inválido (tarefa 2.5)
+- [ ] Dia vazio com texto de exemplo (2.6)
+- [ ] Tópico de terapia sendo escrito e já fechado, no Escritor (5.2)
+- [ ] Centralizadora do MVP, só com o card Tópicos de terapia e o botão de novo lembrete (5.4)
+- [ ] Ajustes dos pop-ups de terapia e de lembrete, como pede a nota "ajustar pop-ups" no Figma (5.5 e 6.5)
+- [ ] Dia futuro vazio com a dica do `lembrete/` (6.2)
+- [ ] Lembrete em destaque no topo de Hoje e lembrete na leitura sem o comando (6.3)
+- [ ] Boas-vindas trazida para a Mobile Prototype e tela Sobre (7.1 e 7.2)
+
+## Em aberto
+
+- **Formato do texto escrito pelos pop-ups:** há uma proposta no `PRODUTO.md`, a confirmar com o grupo antes das tarefas 5.5 e 6.5.
+- **Paleta dos humores:** a atual vale para o MVP, mas pode mudar.
+
+## Fora do MVP
+
+Sentimentos, apelido do dia, calendário mensal, estatísticas e Marcos, busca, configurações (exportar e importar, tema escuro, bloqueio por PIN, lembrete para escrever), notificações e versão desktop.
+
+**Observação sobre exportar e importar:** não é foco agora, mas sem isso, limpar os dados do navegador apaga o diário. A tela Sobre deve avisar isso, e o assunto volta depois do MVP.

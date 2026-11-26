@@ -12,14 +12,7 @@ Tudo o que você escreve fica **somente no seu aparelho**. Não há servidor, co
 
 ## Estado do projeto
 
-Em planejamento. O desenvolvimento é feito em 4 níveis de complexidade, cada um entregável sozinho. Veja o plano completo em [`ESCOPO.md`](ESCOPO.md).
-
-| Nível | Foco | Situação |
-|---|---|---|
-| 1 | Escrever e reler dias, humor e hora | A fazer |
-| 2 | Calendário com humores em cores | A fazer |
-| 3 | Lembretes em dias futuros | A fazer |
-| 4 | Extras | A fazer |
+Em desenvolvimento. O que o app é e as regras dos comandos estão em [`docs/PRODUTO.md`](docs/PRODUTO.md). O objetivo atual (a primeira versão publicada) e a lista de tarefas, em ordem, estão em [`docs/MVP.md`](docs/MVP.md).
 
 ## Como rodar
 
