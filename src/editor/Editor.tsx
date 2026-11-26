@@ -5,7 +5,10 @@ import { Annotation, EditorState } from '@codemirror/state'
 import { EditorView, keymap, placeholder } from '@codemirror/view'
 import { useEffect, useImperativeHandle, useRef, useState, type Ref } from 'react'
 import type { Edicao } from './comandos.ts'
+import { horaAgora } from '../datas.ts'
+import { avisos } from './avisos.ts'
 import { etiquetas } from './etiquetas.ts'
+import { regrasDoHumor } from './regrasDoHumor.ts'
 import './Editor.css'
 
 /** O que a tela pode pedir ao editor (ex.: os botões da barra de comandos). */
@@ -64,6 +67,9 @@ export function Editor({ texto, aoMudar, ref }: Props) {
           // Dia vazio: dica em cinza, que some assim que a pessoa começa a escrever.
           placeholder('Escreva aqui...'),
           etiquetas(),
+          avisos(),
+          // Por enquanto só existe o dia de hoje; os outros dias chegam na Fase 4.
+          regrasDoHumor({ horaAtual: () => horaAgora(), hoje: true }),
           EditorView.updateListener.of((u) => {
             const deFora = u.transactions.some((tr) => tr.annotation(vindoDeFora))
             if (u.docChanged && !deFora) aoMudarAtual.current(u.state.doc.toString())

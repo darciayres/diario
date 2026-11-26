@@ -174,6 +174,66 @@ describe('Tela Hoje', () => {
     expect(screen.queryByRole('group', { name: 'Escolha o humor' })).not.toBeInTheDocument()
   })
 
+  describe('humor digitado (regras do editor)', () => {
+    /** Digita no lugar do cursor, como o teclado faz. */
+    function digitar(editor: HTMLElement, texto: string, evento = 'input.type') {
+      const vista = vistaDe(editor)
+      const pos = vista.state.selection.main.head
+      act(() => {
+        vista.dispatch({
+          changes: { from: pos, insert: texto },
+          selection: { anchor: pos + texto.length },
+          userEvent: evento,
+        })
+      })
+    }
+    const esperarArrumar = () => act(async () => {})
+
+    it('no começo do dia, ganha a hora atual quando o cursor sai da linha', async () => {
+      render(<Hoje />)
+      const editor = await acharEditor()
+      digitar(editor, 'acordei cedo\nhumor/4')
+      await esperarArrumar()
+      expect(textoDo(editor)).toBe('acordei cedo\nhumor/4') // ainda escrevendo nessa linha
+      digitar(editor, '\n')
+      await esperarArrumar()
+      expect(textoDo(editor)).toBe('acordei cedo\nhora/09:30 humor/4\n')
+    })
+
+    it('num bloco com hora, vai para a linha do hora/', async () => {
+      await salvarDia(HOJE, 'hora/08:00\nalmocei')
+      render(<Hoje />)
+      const editor = await acharEditor()
+      digitar(editor, '\nhumor/5')
+      digitar(editor, '\n')
+      await esperarArrumar()
+      expect(textoDo(editor)).toBe('hora/08:00 humor/5\nalmocei\n')
+    })
+
+    it('texto colado não é mexido', async () => {
+      render(<Hoje />)
+      const editor = await acharEditor()
+      digitar(editor, 'acordei cedo\nhumor/4', 'input.paste')
+      digitar(editor, '\n')
+      await esperarArrumar()
+      expect(textoDo(editor)).toBe('acordei cedo\nhumor/4\n')
+    })
+
+    it('ao sair do app, arruma na hora e salva o texto já arrumado', async () => {
+      render(<Hoje />)
+      const editor = await acharEditor()
+      digitar(editor, 'humor/3')
+      const visibilidade = Object.getOwnPropertyDescriptor(Document.prototype, 'visibilityState')
+      Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true })
+      act(() => {
+        document.dispatchEvent(new Event('visibilitychange'))
+      })
+      Object.defineProperty(document, 'visibilityState', visibilidade!)
+      expect(textoDo(editor)).toBe('hora/09:30 humor/3')
+      await waitFor(async () => expect(await carregarDia(HOJE)).toBe('hora/09:30 humor/3'))
+    })
+  })
+
   it('avisa que os dados ficam só no aparelho', () => {
     render(<Hoje />)
     expect(screen.getByText(/só neste aparelho/)).toBeInTheDocument()

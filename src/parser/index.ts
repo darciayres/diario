@@ -81,9 +81,9 @@ export function parse(texto: string, { diaFuturo = false }: OpcoesParse = {}): D
     for (const c of comandos.filter((c) => c.tipo === 'hora')) {
       const horario = HORARIO.exec(c.valor)
       if (!horario) {
-        avisar(c, 'hora-invalida', 'Hora inválida. Use hora/HH:MM, por exemplo hora/14:32.')
+        avisar(c, 'hora-invalida', 'Use a hora assim: hora/14:30')
       } else if (abriuBloco) {
-        avisar(c, 'hora-repetida', 'Só vale um hora/ por linha.')
+        avisar(c, 'hora-repetida', 'Só vale um hora/ por linha')
       } else {
         const hh = horario[1].padStart(2, '0')
         blocos.push(novoBloco(i, `${hh}:${horario[2]}`, { de: c.de, ate: c.ate }, false))
@@ -94,11 +94,11 @@ export function parse(texto: string, { diaFuturo = false }: OpcoesParse = {}): D
     for (const c of comandos.filter((c) => c.tipo === 'humor')) {
       if (diaFuturo) {
         // Ninguém registra como se sente num dia que ainda não chegou: o comando não conta como humor.
-        avisar(c, 'humor-no-futuro', 'Não dá para registrar humor num dia que ainda não chegou.')
+        avisar(c, 'humor-no-futuro', 'Não dá para registrar humor num dia que ainda não chegou')
         continue
       }
       if (!/^[1-5]$/.test(c.valor)) {
-        avisar(c, 'humor-invalido', 'Humor inválido. Use humor/1 até humor/5.')
+        avisar(c, 'humor-invalido', 'O humor vai de 1 a 5. Ex.: humor/4')
         continue
       }
       const valor = Number(c.valor)

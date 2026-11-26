@@ -52,6 +52,22 @@
   background: currentColor;
 }
 
+/* Comando inválido: continua como texto, com fundo de aviso e o ícone de alerta logo depois. */
+.editor .comando-erro {
+  border-radius: 5px 0 0 5px;
+  background: var(--aviso-fundo);
+  color: var(--aviso-texto);
+}
+
+.editor .comando-erro__icone {
+  display: inline-block;
+  box-sizing: content-box;
+  padding: 3px 4px 3px 0;
+  border-radius: 0 5px 5px 0;
+  background: var(--aviso-fundo);
+  vertical-align: -6px;
+}
+
 /* Comando com o cursor em cima: volta a ser texto, com o fundo de destaque. */
 .editor .comando-ativo {
   border-radius: 4px;
