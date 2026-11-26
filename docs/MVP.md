@@ -95,7 +95,7 @@ Página **Mobile Prototype** do arquivo [DINT2-AV02](https://www.figma.com/desig
 
 Cada item precisa estar no Figma antes da tarefa que depende dele.
 
-- [ ] Aviso de comando inválido (tarefa 2.5)
+- [x] Aviso de comando inválido (tarefa 2.5): sugestão provisória na página claude (CL) do Figma
 - [x] Dia vazio com texto de exemplo (2.6)
 - [ ] Tópico de terapia sendo escrito e já fechado, no Escritor (5.2)
 - [ ] Centralizadora do MVP, só com o card Tópicos de terapia e o botão de novo lembrete (5.4)
@@ -108,6 +108,7 @@ Cada item precisa estar no Figma antes da tarefa que depende dele.
 
 - **Formato do texto escrito pelos pop-ups:** há uma proposta no `PRODUTO.md`, a confirmar com o grupo antes das tarefas 5.5 e 6.5.
 - **Paleta dos humores:** a atual vale para o MVP, mas pode mudar.
+- **Visual do aviso de comando inválido (a rever):** sugestão provisória na página claude (CL) do Figma: o comando continua como texto, com fundo `aviso/fundo` e ícone de alerta, e um balão com o motivo e como corrigir aparece quando o cursor está no comando. O mesmo visual vale para o humor em dias futuros.
 
 ## Fora do MVP
 
