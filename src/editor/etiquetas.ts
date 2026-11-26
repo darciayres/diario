@@ -9,7 +9,17 @@ import { parse } from '../parser/index.ts'
 
 /** Um pedaço do texto que vira etiqueta, ou que aparece como texto destacado (cursor em cima). */
 export type Trecho =
-  | { tipo: 'etiqueta'; de: number; ate: number; hora: string | null; humor: number | null; linhaInteira: boolean }
+  | {
+      tipo: 'etiqueta'
+      de: number
+      ate: number
+      hora: string | null
+      humor: number | null
+      linhaInteira: boolean
+      /** Onde termina cada comando: é ali que o cursor vai ao tocar na etiqueta. */
+      fimHora: number | null
+      fimHumor: number | null
+    }
   | { tipo: 'ativo'; de: number; ate: number }
 
 type Selecao = { from: number; to: number }
@@ -74,6 +84,8 @@ export function calcularTrechos(texto: string, selecoes: readonly Selecao[]): Tr
         hora: hora ? (hora.valor as string) : null,
         humor: humor ? (humor.valor as number) : null,
         linhaInteira: grupo.every((c) => c.sozinhoNaLinha),
+        fimHora: hora ? hora.ate : null,
+        fimHumor: humor ? humor.ate : null,
       })
     }
   }
@@ -147,11 +159,41 @@ function decorar(state: EditorState): DecorationSet {
   return Decoration.set(decoracoes, true)
 }
 
+/**
+ * Onde pôr o cursor ao tocar numa etiqueta: logo depois do comando tocado
+ * (ex.: depois do 4 em `humor/4`), para a pessoa já poder trocar o valor.
+ */
+export function posicaoAoTocar(texto: string, inicioDaEtiqueta: number, tocou: 'hora' | 'humor' | null): number | null {
+  const trecho = calcularTrechos(texto, []).find((t) => t.tipo === 'etiqueta' && t.de === inicioDaEtiqueta)
+  if (!trecho || trecho.tipo !== 'etiqueta') return null
+  if (tocou === 'hora' && trecho.fimHora !== null) return trecho.fimHora
+  if (tocou === 'humor' && trecho.fimHumor !== null) return trecho.fimHumor
+  return trecho.ate
+}
+
+const aoTocarNaEtiqueta = EditorView.domEventHandlers({
+  mousedown(evento, view) {
+    const alvo = evento.target instanceof Element ? evento.target : null
+    const fileira = alvo?.closest('.etiquetas')
+    if (!fileira) return false
+    const tocou = alvo?.closest('.etiqueta--hora') ? 'hora' : alvo?.closest('.etiqueta--humor') ? 'humor' : null
+    const pos = posicaoAoTocar(view.state.doc.toString(), view.posAtDOM(fileira), tocou)
+    if (pos === null) return false
+    evento.preventDefault()
+    view.focus()
+    view.dispatch({ selection: { anchor: pos } })
+    return true
+  },
+})
+
 /** Extensão do CodeMirror que liga as etiquetas. */
 export function etiquetas(): Extension {
-  return StateField.define<DecorationSet>({
-    create: decorar,
-    update: (atual, tr) => (tr.docChanged || tr.selection ? decorar(tr.state) : atual),
-    provide: (campo) => EditorView.decorations.from(campo),
-  })
+  return [
+    StateField.define<DecorationSet>({
+      create: decorar,
+      update: (atual, tr) => (tr.docChanged || tr.selection ? decorar(tr.state) : atual),
+      provide: (campo) => EditorView.decorations.from(campo),
+    }),
+    aoTocarNaEtiqueta,
+  ]
 }
