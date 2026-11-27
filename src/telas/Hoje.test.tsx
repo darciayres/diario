@@ -105,8 +105,10 @@ describe('Tela Hoje', () => {
       mudarTeclado(300)
       await act(() => new Promise((r) => setTimeout(r, 500)))
       expect(editor).toHaveAttribute('contenteditable', 'true')
-      // Se o teclado descer de vez, volta para o modo ler.
+      expect(screen.getByRole('toolbar', { name: 'Comandos' })).toBeInTheDocument()
+      // Se o teclado descer de vez, a barra some na hora e o dia volta para o modo ler.
       mudarTeclado(0)
+      expect(screen.queryByRole('toolbar', { name: 'Comandos' })).not.toBeInTheDocument()
       await waitFor(() => expect(editor).toHaveAttribute('contenteditable', 'false'))
       expect(screen.getByRole('button', { name: 'Ler' })).toHaveAttribute('aria-pressed', 'true')
     } finally {

@@ -11,6 +11,7 @@ import { horaAgora } from '../datas.ts'
 import { avisos } from './avisos.ts'
 import type { Edicao } from './comandos.ts'
 import { etiquetas, posicaoDoToqueNaEtiqueta } from './etiquetas.ts'
+import { MARGEM_DO_CURSOR_EM_CIMA, MARGEM_DO_CURSOR_EMBAIXO } from './margens.ts'
 import { modoLeitura } from './modo.ts'
 import { regrasDoHumor } from './regrasDoHumor.ts'
 import './Editor.css'
@@ -119,6 +120,8 @@ export function Editor({ texto, aoMudar, modo, aoMudarModo, ref }: Props) {
             autocapitalize: 'sentences',
           }),
           tema,
+          // Ao digitar, o texto rola antes de o cursor chegar atrás da barra de comandos ou do botão do topo.
+          EditorView.scrollMargins.of(() => ({ top: MARGEM_DO_CURSOR_EM_CIMA, bottom: MARGEM_DO_CURSOR_EMBAIXO })),
           compartimentoDoModo.current.of(configuracaoDoModo(modoInicial)),
           // Dia vazio: dica em cinza, que some assim que a pessoa começa a escrever.
           placeholder('Escreva aqui...'),

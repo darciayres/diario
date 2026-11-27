@@ -13,6 +13,7 @@ import { useAlturaVisivel, useEspacoDoTeclado } from '../componentes/useEspacoDo
 import { dataDeHoje, horaAgora } from '../datas.ts'
 import { escreverHumor, inserirHora } from '../editor/comandos.ts'
 import { Editor, type ControleDoEditor } from '../editor/Editor.tsx'
+import { MARGEM_DO_CURSOR_EM_CIMA, MARGEM_DO_CURSOR_EMBAIXO } from '../editor/margens.ts'
 import { useTextoDoDia } from '../editor/useTextoDoDia.ts'
 import './Hoje.css'
 
@@ -23,10 +24,6 @@ const TECLADO_ABERTO = 150
 // Quanto tempo (em milissegundos) o teclado precisa ficar fechado para o dia voltar ao modo ler.
 const ESPERA_TECLADO_FECHADO = 400
 
-// Onde o cursor pode ficar na área do texto, no modo escrever:
-// embaixo, acima da barra de comandos; em cima, abaixo do botão ler/escrever.
-const MARGEM_DO_CURSOR_EMBAIXO = 96
-const MARGEM_DO_CURSOR_EM_CIMA = 120
 // Antes de o teclado subir, o cursor fica nesta fração de cima da tela (o teclado cobre o resto).
 const PARTE_LIVRE_DO_TECLADO = 0.4
 // Duração do deslizar do texto, igual às animações do Figma (0,3 s).
@@ -68,6 +65,13 @@ export function Hoje() {
   const alturaVisivel = useAlturaVisivel()
   const espacoDoTeclado = useEspacoDoTeclado()
   const tecladoAberto = espacoDoTeclado > TECLADO_ABERTO
+
+  // Se o teclado abriu no modo escrever e depois desceu, a barra de comandos some na hora,
+  // sem esperar o modo ler (senão ela fica parada no meio da tela por um instante).
+  const [tecladoAbriuNaEscrita, setTecladoAbriuNaEscrita] = useState(false)
+  if (modo === 'escrever' && tecladoAberto && !tecladoAbriuNaEscrita) setTecladoAbriuNaEscrita(true)
+  if (modo === 'ler' && tecladoAbriuNaEscrita) setTecladoAbriuNaEscrita(false)
+  const mostrarBarra = modo === 'escrever' && !(tecladoAbriuNaEscrita && espacoDoTeclado < TECLADO_FECHADO)
 
   // No celular, quando o teclado desce, o dia volta para o modo ler.
   const tecladoEstavaAberto = useRef(false)
@@ -185,7 +189,7 @@ export function Hoje() {
         {fase === 'pronto' && <AlternarModo modo={modo} aoEscolher={escolherModo} />}
       </header>
 
-      {fase === 'pronto' && modo === 'escrever' && (
+      {fase === 'pronto' && mostrarBarra && (
         <BarraDeComandos
           tecladoAberto={tecladoAberto}
           aoInserirHora={() => editor.current?.editar((t, cursor) => inserirHora(t, cursor, horaAgora()))}
