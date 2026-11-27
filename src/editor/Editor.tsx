@@ -45,6 +45,11 @@ type Props = {
   modo: Modo
   /** Avisa a tela quando o próprio editor muda de modo (ex.: a pessoa tocou no texto no modo ler). */
   aoMudarModo: (modo: Modo) => void
+  /**
+   * Chamado ao entrar no modo escrever, com o cursor já no lugar, logo antes de o texto ganhar o
+   * foco (e o teclado começar a subir): a tela aproveita para deixar o cursor à vista.
+   */
+  antesDoFoco?: () => void
   ref?: Ref<ControleDoEditor>
 }
 
@@ -99,7 +104,7 @@ function posicaoSemRolar(view: EditorView, faixa: FaixaVisivel): number {
 /** A parte da configuração que muda entre ler e escrever. */
 const configuracaoDoModo = (modo: Modo) => [EditorView.editable.of(modo === 'escrever'), modoLeitura.of(modo === 'ler')]
 
-export function Editor({ texto, aoMudar, modo, aoMudarModo, ref }: Props) {
+export function Editor({ texto, aoMudar, modo, aoMudarModo, antesDoFoco, ref }: Props) {
   const caixa = useRef<HTMLDivElement>(null)
   const vista = useRef<EditorView | null>(null)
   const compartimentoDoModo = useRef(new Compartment())
@@ -107,10 +112,12 @@ export function Editor({ texto, aoMudar, modo, aoMudarModo, ref }: Props) {
   const [modoInicial] = useState(modo)
   const aoMudarAtual = useRef(aoMudar)
   const aoMudarModoAtual = useRef(aoMudarModo)
+  const antesDoFocoAtual = useRef(antesDoFoco)
 
   useEffect(() => {
     aoMudarAtual.current = aoMudar
     aoMudarModoAtual.current = aoMudarModo
+    antesDoFocoAtual.current = antesDoFoco
   })
 
   /**
@@ -120,7 +127,9 @@ export function Editor({ texto, aoMudar, modo, aoMudarModo, ref }: Props) {
   function entrarNaEscrita(view: EditorView, pos: number | ((view: EditorView) => number)) {
     view.dispatch({ effects: compartimentoDoModo.current.reconfigure(configuracaoDoModo('escrever')) })
     view.dispatch({ selection: { anchor: typeof pos === 'number' ? pos : pos(view) } })
-    // Se o cursor ficar onde o teclado vai cobrir, a tela (Hoje) rola até ele, suavemente.
+    // Antes do foco: se o cursor ficou onde o teclado vai cobrir, a tela (Hoje) já o traz à vista.
+    // Assim o Safari não precisa empurrar a página quando o teclado subir.
+    antesDoFocoAtual.current?.()
     view.focus()
     aoMudarModoAtual.current('escrever')
   }

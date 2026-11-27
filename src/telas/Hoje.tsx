@@ -55,6 +55,20 @@ function faixaVisivel(
   return { cima, baixo: caixa.top + caixa.height * PARTE_LIVRE_DO_TECLADO }
 }
 
+/** Quanto o texto precisa rolar para o cursor entrar na faixa visível (0 se já está nela). */
+function distanciaAteAFaixa(cursor: { top: number; bottom: number }, faixa: FaixaVisivel): number {
+  if (cursor.bottom > faixa.baixo) return cursor.bottom - faixa.baixo
+  if (cursor.top < faixa.cima) return cursor.top - faixa.cima
+  return 0
+}
+
+/**
+ * true enquanto o Safari está empurrando a página inteira (para mostrar o cursor). É passageiro:
+ * o app devolve a página ao lugar. Nesse meio-tempo as medidas da tela e do teclado saem erradas,
+ * então nada é recalculado.
+ */
+const paginaEmpurrada = () => window.scrollY !== 0 || (window.visualViewport?.offsetTop ?? 0) > 1
+
 /**
  * Rola a área do texto com a rolagem suave do próprio navegador: o celular a faz sem redesenhar
  * o texto a cada quadro (fica fluida), e um toque do dedo a interrompe naturalmente.
@@ -117,23 +131,27 @@ export function Hoje() {
   // escrever, o app já sabe onde ele vai cobrir a tela.
   const alturaConhecidaDoTeclado = useRef(0)
   useEffect(() => {
-    if (tecladoAberto) alturaConhecidaDoTeclado.current = espacoDoTeclado
+    if (tecladoAberto && !paginaEmpurrada()) alturaConhecidaDoTeclado.current = espacoDoTeclado
   }, [tecladoAberto, espacoDoTeclado])
 
-  // No modo escrever, o cursor fica sempre à vista, acima do teclado. Pelo botão do topo, ele já
-  // nasce dentro da faixa visível e nada rola; ao tocar numa linha que o teclado vai cobrir, ou
-  // quando o teclado abre, o texto rola suavemente até o cursor.
+  // No modo escrever, o cursor fica sempre à vista, acima do teclado. Ele já nasce à vista: pelo
+  // botão do topo, numa linha dentro da faixa visível; ao tocar numa linha que o teclado vai
+  // cobrir, o texto pula até ela no próprio toque (veja cursorAVistaAntesDoTeclado). Se, com o
+  // teclado já aberto, o cursor ainda ficar atrás dele ou da barra, o texto rola suavemente.
   const rolagem = useRef<HTMLDivElement>(null)
   useLayoutEffect(() => {
     const area = rolagem.current
     // Quando o teclado desce, o dia está voltando para o modo ler: nada rola.
     if (!area || modo !== 'escrever' || tecladoDesceu) return
+    // Durante um empurrão do Safari, as medidas saem erradas: espera a página voltar ao lugar.
+    if (paginaEmpurrada()) {
+      diagnostico('app espera', 'página empurrada: não recalcula')
+      return
+    }
     const cursor = editor.current?.posicaoDoCursor()
     const faixa = faixaVisivel(area, espacoDoTeclado, tecladoAbriuNaEscrita, alturaConhecidaDoTeclado.current)
     if (!cursor || !faixa) return
-    let distancia = 0
-    if (cursor.bottom > faixa.baixo) distancia = cursor.bottom - faixa.baixo
-    else if (cursor.top < faixa.cima) distancia = cursor.top - faixa.cima
+    const distancia = distanciaAteAFaixa(cursor, faixa)
     if (Math.abs(distancia) >= 1) {
       diagnosticoAppRolou(distancia, distancia > 0 ? cursor.bottom : cursor.top, distancia > 0 ? faixa.baixo : faixa.cima)
       rolarSuave(area, distancia)
@@ -155,6 +173,26 @@ export function Hoje() {
       window.removeEventListener('scroll', voltarAoLugar)
     }
   }, [])
+
+  /**
+   * Chamado no próprio toque que passa para o modo escrever, com o cursor já no lugar e logo antes
+   * de o teclado começar a subir. Se o cursor ficou onde o teclado vai cobrir, o texto pula na hora
+   * até ele ficar à vista: assim o Safari não precisa empurrar a página (o que dava o sobe e desce).
+   * É um pulo, e não uma rolagem suave, porque a rolagem suave não chega a tempo: o teclado sobe
+   * antes e o Safari empurra a página mesmo assim. No computador não há teclado na tela, e a
+   * rolagem suave do efeito acima basta.
+   */
+  function cursorAVistaAntesDoTeclado() {
+    if (!ehTelaDeToque()) return
+    const area = rolagem.current
+    const cursor = editor.current?.posicaoDoCursor()
+    const faixa = area ? faixaVisivel(area, espacoDoTeclado, false, alturaConhecidaDoTeclado.current) : undefined
+    if (!area || !cursor || !faixa) return
+    const distancia = distanciaAteAFaixa(cursor, faixa)
+    if (Math.abs(distancia) < 1) return
+    diagnostico('APP PULA', `${Math.round(distancia)}px antes do teclado (cursor ${Math.round(cursor.bottom)}, limite ${Math.round(faixa.baixo)})`)
+    area.scrollTop += distancia
+  }
 
   function escolherModo(novo: Modo) {
     if (novo !== 'escrever') {
@@ -184,7 +222,14 @@ export function Hoje() {
           <TituloDia data={data} />
 
           {fase === 'pronto' && (
-            <Editor ref={editor} texto={texto} aoMudar={alterar} modo={modo} aoMudarModo={setModo} />
+            <Editor
+              ref={editor}
+              texto={texto}
+              aoMudar={alterar}
+              modo={modo}
+              aoMudarModo={setModo}
+              antesDoFoco={cursorAVistaAntesDoTeclado}
+            />
           )}
 
           {fase === 'erro-leitura' && (
