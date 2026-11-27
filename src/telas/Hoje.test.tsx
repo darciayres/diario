@@ -435,6 +435,40 @@ describe('Tela Hoje', () => {
       }
     })
 
+    it('quando o texto perde o foco, a barra já começa a descer com o teclado e some no fim', async () => {
+      const celular = simularCelular()
+      try {
+        const editor = await abrirEscrevendo()
+        celular.mudarTeclado(300)
+        const caixaDaBarra = () => barra()?.closest('.barra-comandos')
+        expect(caixaDaBarra()).not.toHaveClass('barra-comandos--saindo')
+        fireEvent.focusOut(editor) // o teclado começa a descer
+        expect(caixaDaBarra()).toHaveClass('barra-comandos--saindo')
+        // Se o foco voltar (o teclado só piscou), a barra volta para o lugar.
+        fireEvent.focusIn(editor)
+        expect(caixaDaBarra()).not.toHaveClass('barra-comandos--saindo')
+        fireEvent.focusOut(editor)
+        celular.mudarTeclado(0) // o teclado terminou de descer
+        expect(barra()).not.toBeInTheDocument()
+      } finally {
+        celular.desfazer()
+      }
+    })
+
+    it('ao tocar em Ler com o teclado aberto, a barra desce com o teclado em vez de sumir de repente', async () => {
+      const celular = simularCelular()
+      try {
+        await abrirEscrevendo()
+        celular.mudarTeclado(300)
+        fireEvent.click(screen.getByRole('button', { name: 'Ler' }))
+        expect(barra()?.closest('.barra-comandos')).toHaveClass('barra-comandos--saindo')
+        celular.mudarTeclado(0)
+        expect(barra()).not.toBeInTheDocument()
+      } finally {
+        celular.desfazer()
+      }
+    })
+
     it('o aviso fica fora da área que rola mesmo com o teclado aberto', async () => {
       const celular = simularCelular()
       try {

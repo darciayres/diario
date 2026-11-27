@@ -14,6 +14,8 @@ type Props = {
   tecladoAberto: boolean
   /** Quanto da parte de baixo da tela o teclado cobre, em pixels: a barra fica logo acima dele. */
   espacoDoTeclado: number
+  /** true quando o teclado começou a descer: a barra desce junto e some atrás dele. */
+  saindo?: boolean
   aoInserirHora: () => void
   aoEscolherHumor: (humor: number) => void
   /** Devolve o foco ao texto depois de um toque (garantia extra para o teclado não descer). */
@@ -31,14 +33,21 @@ function ehSafariDoIphone(): boolean {
   return ehIphone && !instalado
 }
 
-export function BarraDeComandos({ tecladoAberto, espacoDoTeclado, aoInserirHora, aoEscolherHumor, aoTocar }: Props) {
+export function BarraDeComandos({
+  tecladoAberto,
+  espacoDoTeclado,
+  saindo = false,
+  aoInserirHora,
+  aoEscolherHumor,
+  aoTocar,
+}: Props) {
   const [humorAberto, setHumorAberto] = useState(false)
   // A setinha recolhe os botões e mostra de novo (animação do Figma: 0,3 s).
   const [recolhida, setRecolhida] = useState(false)
 
   return (
     <div
-      className="barra-comandos"
+      className={`barra-comandos${saindo ? ' barra-comandos--saindo' : ''}`}
       style={
         tecladoAberto
           ? ({

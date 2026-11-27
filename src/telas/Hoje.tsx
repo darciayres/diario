@@ -73,7 +73,14 @@ export function Hoje() {
   if (modo === 'escrever' && tecladoAberto && !tecladoAbriuNaEscrita) setTecladoAbriuNaEscrita(true)
   if (modo === 'ler' && tecladoAbriuNaEscrita) setTecladoAbriuNaEscrita(false)
   const tecladoDesceu = tecladoAbriuNaEscrita && espacoDoTeclado < TECLADO_FECHADO
-  const mostrarBarra = modo === 'escrever' && !tecladoDesceu
+
+  // O teclado desce porque o texto perdeu o foco (tocar fora, no ✓ do teclado ou no botão Ler).
+  // O app sabe disso na hora, mas o navegador só avisa que o teclado desceu no fim da descida.
+  // Então, assim que o texto perde o foco, a barra já começa a descer junto com o teclado e some
+  // atrás dele, em vez de ficar parada e sumir de repente no fim.
+  const [textoSemFoco, setTextoSemFoco] = useState(false)
+  const barraSaindo = espacoDoTeclado > TECLADO_FECHADO && (modo === 'ler' || textoSemFoco)
+  const mostrarBarra = (modo === 'escrever' && !tecladoDesceu) || barraSaindo
 
   // No celular, quando o teclado desce, o dia volta para o modo ler.
   const tecladoEstavaAberto = useRef(false)
@@ -179,6 +186,8 @@ export function Hoje() {
   return (
     <main
       className={`hoje hoje--${modo}`}
+      onFocus={(e) => e.target.classList.contains('cm-content') && setTextoSemFoco(false)}
+      onBlur={(e) => e.target.classList.contains('cm-content') && setTextoSemFoco(true)}
       style={
         {
           '--altura-sem-teclado': alturaSemTeclado ? `${alturaSemTeclado}px` : undefined,
@@ -221,6 +230,7 @@ export function Hoje() {
         <BarraDeComandos
           tecladoAberto={tecladoAberto}
           espacoDoTeclado={espacoDoTeclado}
+          saindo={barraSaindo}
           aoInserirHora={() => editor.current?.editar((t, cursor) => inserirHora(t, cursor, horaAgora()))}
           aoEscolherHumor={(n) => editor.current?.editar((t, cursor) => escreverHumor(t, cursor, n, horaAgora()))}
           aoTocar={() => editor.current?.focar()}

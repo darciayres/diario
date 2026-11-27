@@ -15,6 +15,15 @@
   gap: 8px;
 }
 
+/* O teclado começou a descer: a barra desce junto, um pouco mais rápido que ele, e some atrás
+   dele (o teclado fica sempre por cima da página). Anima a posição (bottom), e não transform,
+   porque no iPhone a animação de transform leva um ou dois quadros para começar. */
+.barra-comandos--saindo {
+  bottom: -120px;
+  pointer-events: none;
+  transition: bottom 0.25s ease-in;
+}
+
 /* Os botões e a setinha, lado a lado, com 4 px entre eles (Figma). */
 .barra-comandos__linha {
   display: flex;
