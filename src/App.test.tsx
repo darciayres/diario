@@ -204,6 +204,22 @@ describe('faixa da semana', () => {
   })
 })
 
+describe('título do dia', () => {
+  const linhaDeCima = () => document.querySelector('.titulo-dia__semana')!.textContent
+
+  it('mostra quão perto de hoje está o dia aberto', async () => {
+    render(<App />)
+    await acharEditor()
+    expect(linhaDeCima()).toBe('Quarta-feira')
+    fireEvent.click(botaoDaBarra())
+    fireEvent.click(barra().getByRole('button', { name: 'Ontem, Terça-Feira (20/10/26)' }))
+    await waitFor(() => expect(linhaDeCima()).toBe('Ontem, terça-feira'))
+    fireEvent.click(botaoDaBarra())
+    fireEvent.click(barra().getByRole('button', { name: 'sábado, 24' }))
+    await waitFor(() => expect(linhaDeCima()).toBe('Sábado, daqui a 3 dias'))
+  })
+})
+
 describe('dia passado', () => {
   async function abrirOntem() {
     window.history.replaceState(null, '', '/#2026-10-20')

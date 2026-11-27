@@ -65,3 +65,43 @@ describe('semanaDe', () => {
     expect(semanaDe('2026-10-25')).toEqual(semana) // domingo
   })
 })
+
+describe('título do dia perto de hoje (regra do PRODUTO.md)', () => {
+  const hoje = '2026-10-21' // quarta-feira
+  const linha = (data: string) => tituloDoDia(data, hoje).diaDaSemana
+
+  it('hoje: só o dia da semana, como no Figma', () => {
+    expect(linha('2026-10-21')).toBe('Quarta-feira')
+  })
+
+  it('ontem e amanhã', () => {
+    expect(linha('2026-10-20')).toBe('Ontem, terça-feira')
+    expect(linha('2026-10-22')).toBe('Amanhã, quinta-feira')
+  })
+
+  it('até 6 dias, em dias', () => {
+    expect(linha('2026-10-17')).toBe('Sábado, há 4 dias')
+    expect(linha('2026-10-24')).toBe('Sábado, daqui a 3 dias')
+    expect(linha('2026-10-27')).toBe('Terça-feira, daqui a 6 dias')
+  })
+
+  it('de 7 dias até um mês, em semanas e dias', () => {
+    expect(linha('2026-10-28')).toBe('Quarta-feira, daqui a uma semana')
+    expect(linha('2026-10-31')).toBe('Sábado, daqui a uma semana e 3 dias')
+    expect(linha('2026-10-06')).toBe('Terça-feira, há 2 semanas e um dia')
+    expect(linha('2026-11-20')).toBe('Sexta-feira, daqui a 4 semanas e 2 dias')
+  })
+
+  it('a partir de um mês, só em meses', () => {
+    expect(linha('2026-11-21')).toBe('Sábado, daqui a um mês')
+    expect(linha('2026-09-21')).toBe('Segunda-feira, há um mês')
+    expect(linha('2027-01-25')).toBe('Segunda-feira, daqui a 3 meses')
+    expect(linha('2026-06-22')).toBe('Segunda-feira, há 3 meses')
+  })
+
+  it('a partir de um ano, só em anos', () => {
+    expect(linha('2025-10-21')).toBe('Terça-feira, há um ano')
+    expect(linha('2024-03-01')).toBe('Sexta-feira, há 2 anos')
+    expect(linha('2027-10-21')).toBe('Quinta-feira, daqui a um ano')
+  })
+})

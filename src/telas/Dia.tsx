@@ -235,7 +235,7 @@ export function Dia({ data, hoje, irParaHora }: Props) {
     >
       <div className="dia__rolagem" ref={rolagem}>
         <div className="dia__coluna">
-          <TituloDia data={data} />
+          <TituloDia data={data} hoje={hoje} />
 
           {fase === 'pronto' && (
             <Editor

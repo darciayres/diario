@@ -48,11 +48,74 @@ export function rotuloNaListaDeDias(data: string, hoje: string): string {
   return `${prefixo}${diaDaSemana} (${dia}/${mes}/${ano.slice(2)})`
 }
 
-/** As duas linhas do título do dia, como no Figma. Ex.: { diaDaSemana: "Quarta-feira", diaEMes: "20 de Outubro" }. */
-export function tituloDoDia(data: string): { diaDaSemana: string; diaEMes: string } {
+/** Quantos dias vão de `de` até `ate` (negativo se `ate` vem antes). */
+function diasEntre(de: string, ate: string): number {
+  const utc = (data: string) => {
+    const [ano, mes, dia] = data.split('-').map(Number)
+    return Date.UTC(ano, mes - 1, dia)
+  }
+  return Math.round((utc(ate) - utc(de)) / 86_400_000)
+}
+
+/** Quantos meses inteiros vão de `antes` até `depois` (ex.: de 27/10 a 27/11 é um mês; a 26/11, ainda não). */
+function mesesInteiros(antes: string, depois: string): number {
+  const [a1, m1, d1] = antes.split('-').map(Number)
+  const [a2, m2, d2] = depois.split('-').map(Number)
+  return (a2 - a1) * 12 + (m2 - m1) - (d2 < d1 ? 1 : 0)
+}
+
+/** "um dia", "uma semana", "3 dias", "2 meses": o 1 por extenso, os outros em algarismos. */
+function quantos(n: number, singular: string, plural: string, feminino = false): string {
+  return n === 1 ? `${feminino ? 'uma' : 'um'} ${singular}` : `${n} ${plural}`
+}
+
+/**
+ * Quão longe de hoje está o dia, como no título (regra do PRODUTO.md): até 6 dias, em dias;
+ * de 7 dias até um mês, em semanas e dias; a partir de um mês, só em meses; a partir de um ano,
+ * só em anos. Ex.: "há 4 dias", "daqui a uma semana e 3 dias", "há 2 meses".
+ * Hoje, ontem e amanhã ficam de fora (devolve null): eles têm um jeito próprio no título.
+ */
+export function distanciaDeHoje(data: string, hoje: string): string | null {
+  const dias = diasEntre(hoje, data)
+  if (Math.abs(dias) <= 1) return null
+  const distancia = Math.abs(dias)
+  let quanto: string
+  if (distancia <= 6) {
+    quanto = quantos(distancia, 'dia', 'dias')
+  } else {
+    const meses = dias < 0 ? mesesInteiros(data, hoje) : mesesInteiros(hoje, data)
+    if (meses >= 12) {
+      quanto = quantos(Math.floor(meses / 12), 'ano', 'anos')
+    } else if (meses >= 1) {
+      quanto = quantos(meses, 'mês', 'meses')
+    } else {
+      const semanas = Math.floor(distancia / 7)
+      const resto = distancia % 7
+      quanto = quantos(semanas, 'semana', 'semanas', true) + (resto ? ` e ${quantos(resto, 'dia', 'dias')}` : '')
+    }
+  }
+  return dias < 0 ? `há ${quanto}` : `daqui a ${quanto}`
+}
+
+/**
+ * As duas linhas do título do dia, como no Figma. Em cima, o dia da semana, junto de quão perto ele
+ * está de hoje (regra do PRODUTO.md): "Quarta-feira" (hoje), "Ontem, terça-feira", "Amanhã,
+ * quinta-feira", "Sábado, daqui a 3 dias". Embaixo, o dia e o mês: "20 de Outubro".
+ */
+export function tituloDoDia(data: string, hoje: string = data): { diaDaSemana: string; diaEMes: string } {
   const [ano, mes, dia] = data.split('-').map(Number)
   const d = new Date(ano, mes - 1, dia)
-  const diaDaSemana = d.toLocaleDateString('pt-BR', { weekday: 'long' })
+  const nomeDaSemana = d.toLocaleDateString('pt-BR', { weekday: 'long' })
   const nomeDoMes = d.toLocaleDateString('pt-BR', { month: 'long' })
-  return { diaDaSemana: comMaiuscula(diaDaSemana), diaEMes: `${dia} de ${comMaiuscula(nomeDoMes)}` }
+  const dias = diasEntre(hoje, data)
+  const distancia = distanciaDeHoje(data, hoje)
+  const diaDaSemana =
+    dias === -1
+      ? `Ontem, ${nomeDaSemana}`
+      : dias === 1
+        ? `Amanhã, ${nomeDaSemana}`
+        : distancia
+          ? `${comMaiuscula(nomeDaSemana)}, ${distancia}`
+          : comMaiuscula(nomeDaSemana)
+  return { diaDaSemana, diaEMes: `${dia} de ${comMaiuscula(nomeDoMes)}` }
 }
