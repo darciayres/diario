@@ -30,8 +30,7 @@ export function calcularAvisos(
   }
 
   const marcas = parse(texto, { diaFuturo })
-    // O caso limite (dois humores sem hora entre eles) não é erro: o segundo humor vale.
-    .avisos.filter((a) => a.tipo !== 'humor-duplicado' && a.linha !== linhaEmEdicao)
+    .avisos.filter((a) => a.linha !== linhaEmEdicao)
     .map((a) => ({ de: inicioDaLinha[a.linha] + a.de, ate: inicioDaLinha[a.linha] + a.ate, mensagem: a.mensagem }))
 
   const balao = marcas.find((m) => m.de <= cursor && cursor <= m.ate) ?? null

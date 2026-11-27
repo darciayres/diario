@@ -34,8 +34,8 @@ describe('humor digitado num bloco com hora', () => {
     expect(arrumarHumorDigitado('hora/14:30 humor/4\nalmocei', 0, '09:12')).toBeNull()
   })
 
-  it('também vale em dias passados (não precisa inventar hora)', () => {
-    expect(arrumar('hora/14:30\nalmocei\nhumor/4', 2, false)).toBe('hora/14:30 humor/4\nalmocei')
+  it('em dias passados, fica onde foi escrito (o app não mexe no humor)', () => {
+    expect(arrumarHumorDigitado('hora/14:30\nalmocei\nhumor/4', 2, '09:12', false)).toBeNull()
   })
 })
 

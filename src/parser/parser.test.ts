@@ -71,19 +71,19 @@ describe('parse: humor', () => {
   })
 })
 
-describe('parse: caso limite (dois humor/ no mesmo bloco sem hora/)', () => {
-  it('o segundo abre um bloco novo sem horário, com aviso', () => {
+describe('parse: dois humor/ no mesmo bloco sem hora/', () => {
+  it('o segundo abre um momento novo, sem hora, e não ganha aviso', () => {
     const { blocos, avisos } = parse('hora/14:32\nhumor/4\nhumor/3')
     expect(blocos).toHaveLength(3)
     expect(blocos[1]).toMatchObject({ hora: '14:32', humor: 4 })
     expect(blocos[2]).toMatchObject({ hora: null, humor: 3, abertoPorHumorDuplicado: true, linhaInicial: 2 })
-    expect(avisos).toEqual([expect.objectContaining({ linha: 2, tipo: 'humor-duplicado' })])
+    expect(avisos).toEqual([])
   })
 
   it('funciona também no bloco inicial sem horário', () => {
     const { blocos, avisos } = parse('humor/2\nhumor/5')
     expect(blocos.map((b) => b.humor)).toEqual([2, 5])
-    expect(avisos).toHaveLength(1)
+    expect(avisos).toEqual([])
   })
 })
 
@@ -166,10 +166,10 @@ describe('parse: vários comandos na mesma linha', () => {
     expect(avisos).toEqual([expect.objectContaining({ tipo: 'humor-invalido', de: 11, ate: 18 })])
   })
 
-  it('dois humores na mesma linha seguem o caso limite: o segundo abre bloco sem horário', () => {
+  it('dois humores na mesma linha: o segundo abre um momento novo, sem aviso', () => {
     const { blocos, avisos } = parse('humor/2 humor/5')
     expect(blocos.map((b) => b.humor)).toEqual([2, 5])
-    expect(avisos).toEqual([expect.objectContaining({ tipo: 'humor-duplicado' })])
+    expect(avisos).toEqual([])
   })
 })
 

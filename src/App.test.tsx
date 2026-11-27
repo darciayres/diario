@@ -182,6 +182,8 @@ describe('faixa da semana', () => {
     await acharEditor()
     fireEvent.click(screen.getByRole('button', { name: 'Escrever' }))
     expect(document.querySelector('.etiqueta')).toBeNull()
+    // Num dia futuro, a barra de comandos não tem nenhum botão no MVP: não aparece.
+    expect(screen.queryByRole('toolbar', { name: 'Comandos' })).not.toBeInTheDocument()
   })
 
   it('arrastando para o lado, vai para a semana seguinte ou para a anterior', async () => {
@@ -234,9 +236,25 @@ describe('dia passado', () => {
     expect(titulo()).toContain('20 de Outubro')
   })
 
-  it('a barra de comandos não aparece (ainda não há botões para dias passados)', async () => {
+  it('a barra de comandos aparece só com o botão de humor (o de hora escreve a hora de agora)', async () => {
     await abrirOntem()
-    expect(screen.queryByRole('toolbar', { name: 'Comandos' })).not.toBeInTheDocument()
+    const barraDeComandos = within(screen.getByRole('toolbar', { name: 'Comandos' }))
+    expect(barraDeComandos.queryByRole('button', { name: 'Inserir a hora atual' })).not.toBeInTheDocument()
+    expect(barraDeComandos.getByRole('button', { name: 'Escolher o humor' })).toBeInTheDocument()
+  })
+
+  it('o botão de humor escreve só humor/N, sem hora', async () => {
+    const editor = await abrirOntem()
+    fireEvent.click(screen.getByRole('button', { name: 'Escolher o humor' }))
+    fireEvent.click(screen.getByRole('button', { name: /^3/ }))
+    expect(EditorView.findFromDOM(editor)!.state.doc.toString()).toBe('humor/3\n')
+  })
+
+  it('um segundo humor no mesmo bloco não ganha aviso', async () => {
+    await salvarDia('2026-10-20', 'humor/2\nDormi mal.\nhumor/4\nMelhorou.')
+    await abrirOntem()
+    expect(document.querySelector('.comando-erro')).toBeNull()
+    expect(document.querySelectorAll('.etiqueta')).toHaveLength(2)
   })
 
   it('o humor digitado não ganha a hora de agora', async () => {

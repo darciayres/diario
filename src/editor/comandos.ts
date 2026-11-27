@@ -84,3 +84,27 @@ export function escreverHumor(texto: string, cursor: number, humor: number, hora
     cursor: linha.fim + inserido.length,
   }
 }
+
+/**
+ * Botão de humor em dias passados (regra do PRODUTO.md): escreve só `humor/N` onde está o cursor,
+ * sem hora e sem mexer em nada mais. Se ali o comando não valeria (no meio de uma frase), ele
+ * começa uma linha nova a partir do cursor. Quando não há nada depois, o cursor desce para uma
+ * linha nova, pronta para escrever. Se o bloco já tem humor, o novo abre um momento novo, sem hora.
+ */
+export function escreverSoHumor(texto: string, cursor: number, humor: number): Edicao {
+  const linha = linhaDoCursor(texto, cursor)
+  const antes = texto.slice(linha.inicio, cursor)
+  const depois = texto.slice(cursor, linha.fim)
+  const comando = `humor/${humor}`
+
+  // Pode ficar na mesma linha se antes do cursor só há espaços ou outros comandos.
+  const mesmaLinha = soComandos(antes)
+  const prefixo = !mesmaLinha ? '\n' : antes !== '' && !/\s$/.test(antes) ? ' ' : ''
+  const sufixo = depois.trim() === '' ? '\n' : /^\s/.test(depois) ? '' : ' '
+
+  const inserido = prefixo + comando + sufixo
+  return {
+    texto: texto.slice(0, cursor) + inserido + texto.slice(cursor),
+    cursor: cursor + inserido.length,
+  }
+}

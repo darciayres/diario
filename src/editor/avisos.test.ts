@@ -32,7 +32,7 @@ describe('aviso de comando inválido', () => {
     ])
   })
 
-  it('o caso limite (dois humores sem hora) não é erro', () => {
+  it('dois humores no mesmo bloco não são erro', () => {
     expect(calcularAvisos('humor/2\nhumor/4', longe, null).marcas).toEqual([])
   })
 })

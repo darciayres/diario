@@ -12,6 +12,8 @@ import { naoTirarFoco } from './naoTirarFoco.ts'
 type Props = {
   /** true quando o teclado do celular está aberto. */
   tecladoAberto: boolean
+  /** false em dias que não são hoje: o botão de hora some (ele escreve a hora de agora). Padrão: true. */
+  mostrarHora?: boolean
   /** Quanto da parte de baixo da tela o teclado cobre, em pixels: a barra fica logo acima dele. */
   espacoDoTeclado: number
   /** true quando o teclado começou a descer: a barra desce junto e some atrás dele. */
@@ -35,6 +37,7 @@ function ehSafariDoIphone(): boolean {
 
 export function BarraDeComandos({
   tecladoAberto,
+  mostrarHora = true,
   espacoDoTeclado,
   saindo = false,
   aoInserirHora,
@@ -91,18 +94,20 @@ export function BarraDeComandos({
           aria-hidden={recolhida}
           inert={recolhida}
         >
-          <button
-            type="button"
-            className="barra-comandos__botao"
-            aria-label="Inserir a hora atual"
-            {...naoTirarFoco}
-            onClick={() => {
-              setHumorAberto(false)
-              aoInserirHora()
-            }}
-          >
-            <img src={iconeHora} alt="" width={24} height={24} />
-          </button>
+          {mostrarHora && (
+            <button
+              type="button"
+              className="barra-comandos__botao"
+              aria-label="Inserir a hora atual"
+              {...naoTirarFoco}
+              onClick={() => {
+                setHumorAberto(false)
+                aoInserirHora()
+              }}
+            >
+              <img src={iconeHora} alt="" width={24} height={24} />
+            </button>
+          )}
           <button
             type="button"
             className="barra-comandos__botao"

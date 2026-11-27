@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { escreverHumor, inserirHora } from './comandos.ts'
+import { escreverHumor, escreverSoHumor, inserirHora } from './comandos.ts'
 
 /** Mostra o resultado com uma barra | onde fica o cursor, para os testes ficarem fáceis de ler. */
 const comCursor = ({ texto, cursor }: { texto: string; cursor: number }) =>
@@ -88,5 +88,34 @@ describe('botão de humor', () => {
   it('não mexe no resto do texto', () => {
     const antes = 'bom dia\n\nhora/08:00 humor/3\ncafé\nhora/14:30\nalmoço|'
     expect(humor(antes)).toBe('bom dia\n\nhora/08:00 humor/3\ncafé\nhora/14:30 humor/4\nalmoço|')
+  })
+})
+
+describe('botão de humor em dias passados (só humor/N, sem hora)', () => {
+  const soHumor = (marcado: string, n = 3) => {
+    const { texto, cursor } = ler(marcado)
+    return comCursor(escreverSoHumor(texto, cursor, n))
+  }
+
+  it('no começo de uma linha vazia: escreve o humor e desce para uma linha nova', () => {
+    expect(soHumor('|')).toBe('humor/3\n|')
+    expect(soHumor('Acordei tarde.\n|')).toBe('Acordei tarde.\nhumor/3\n|')
+  })
+
+  it('na linha do hora/: fica logo depois dele, sem inventar hora', () => {
+    expect(soHumor('hora/09:15|')).toBe('hora/09:15 humor/3\n|')
+  })
+
+  it('no começo de uma linha com texto: o texto continua depois do humor', () => {
+    expect(soHumor('|Dormi mal.')).toBe('humor/3 |Dormi mal.')
+  })
+
+  it('no meio de uma frase: começa uma linha nova a partir do cursor', () => {
+    expect(soHumor('Dormi mal|, mas acordei bem.')).toBe('Dormi mal\nhumor/3 |, mas acordei bem.')
+    expect(soHumor('Dormi mal.|')).toBe('Dormi mal.\nhumor/3\n|')
+  })
+
+  it('num bloco que já tem humor: escreve mesmo assim (vira um momento novo, sem hora)', () => {
+    expect(soHumor('humor/2\n|', 4)).toBe('humor/2\nhumor/4\n|')
   })
 })

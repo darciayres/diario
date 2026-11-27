@@ -7,12 +7,14 @@ import { comandosDaLinha, parse } from '../parser/index.ts'
 export type Mudanca = { de: number; ate: number; inserir: string }
 
 /**
+ * Só no dia de hoje (em outros dias o humor vale onde foi escrito, e o app não mexe nele):
  * - Bloco com hora e sem humor: o humor vai para a linha do `hora/`; se a linha dele ficar vazia, ela some.
  * - Bloco sem hora (o começo do dia), ou bloco que já tinha humor: ganha `hora/` com a hora atual
- *   antes do humor, na mesma linha, abrindo um bloco novo. Só no dia de hoje.
+ *   antes do humor, na mesma linha, abrindo um bloco novo.
  * Devolve null quando não há nada a fazer.
  */
 export function arrumarHumorDigitado(texto: string, linha: number, horaAtual: string, hoje = true): Mudanca[] | null {
+  if (!hoje) return null
   const linhas = texto.split('\n')
   if (linha < 0 || linha >= linhas.length) return null
   const inicioDa = (n: number) => linhas.slice(0, n).reduce((soma, l) => soma + l.length + 1, 0)
@@ -51,8 +53,7 @@ export function arrumarHumorDigitado(texto: string, linha: number, horaAtual: st
     return [levar, tirar].sort((a, b) => a.de - b.de)
   }
 
-  // Bloco sem hora: no dia de hoje, o humor ganha a hora atual. Em outros dias, fica como está.
-  if (!hoje) return null
+  // Bloco sem hora: o humor ganha a hora atual.
   const pos = inicioDa(linha) + bloco.colunasHumor.de
   return [{ de: pos, ate: pos, inserir: `hora/${horaAtual} ` }]
 }

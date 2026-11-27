@@ -19,7 +19,7 @@ export function foiDigitado(tr: Transaction): boolean {
 type Opcoes = {
   /** Hora atual no formato HH:MM. */
   horaAtual: () => string
-  /** false em dias passados: aí o editor nunca insere a hora atual. */
+  /** false em dias que não são hoje: aí o editor não mexe no humor digitado (veja o PRODUTO.md). */
   hoje: boolean
 }
 

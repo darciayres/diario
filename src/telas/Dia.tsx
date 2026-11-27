@@ -14,7 +14,7 @@ import { BarraDeComandos } from '../componentes/BarraDeComandos.tsx'
 import { TituloDia } from '../componentes/TituloDia.tsx'
 import { useAlturaSemTeclado, useEspacoDoTeclado } from '../componentes/useEspacoDoTeclado.ts'
 import { horaAgora } from '../datas.ts'
-import { escreverHumor, inserirHora } from '../editor/comandos.ts'
+import { escreverHumor, escreverSoHumor, inserirHora } from '../editor/comandos.ts'
 import { Editor, type ControleDoEditor, type FaixaVisivel } from '../editor/Editor.tsx'
 import { MARGEM_DO_CURSOR_EM_CIMA, MARGEM_DO_CURSOR_EMBAIXO } from '../editor/margens.ts'
 import { useTextoDoDia } from '../editor/useTextoDoDia.ts'
@@ -274,14 +274,21 @@ export function Dia({ data, hoje, irParaHora }: Props) {
         {fase === 'pronto' && <AlternarModo modo={modo} aoEscolher={escolherModo} />}
       </header>
 
-      {/* Em dias passados e futuros, a barra não tem nenhum botão para mostrar no MVP: não aparece. */}
-      {fase === 'pronto' && ehHoje && mostrarBarra && (
+      {/* Em dias passados, a barra aparece só com o botão de humor. Em dias futuros, ela não tem nenhum
+          botão para mostrar no MVP: não aparece. */}
+      {fase === 'pronto' && !diaFuturo && mostrarBarra && (
         <BarraDeComandos
           tecladoAberto={tecladoAberto}
+          mostrarHora={ehHoje}
           espacoDoTeclado={espacoDoTeclado}
           saindo={barraSaindo}
           aoInserirHora={() => editor.current?.editar((t, cursor) => inserirHora(t, cursor, horaAgora()))}
-          aoEscolherHumor={(n) => editor.current?.editar((t, cursor) => escreverHumor(t, cursor, n, horaAgora()))}
+          aoEscolherHumor={(n) =>
+            editor.current?.editar((t, cursor) =>
+              // Hoje, o humor ganha a hora atual; em dias passados, o botão escreve só humor/N.
+              ehHoje ? escreverHumor(t, cursor, n, horaAgora()) : escreverSoHumor(t, cursor, n),
+            )
+          }
           aoTocar={() => editor.current?.focar()}
         />
       )}

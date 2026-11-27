@@ -23,7 +23,7 @@ export type Bloco = {
 export type Aviso = Colunas & {
   /** Linha (começando em 0) a que o aviso se refere. */
   linha: number
-  tipo: 'humor-invalido' | 'hora-invalida' | 'hora-repetida' | 'humor-duplicado' | 'humor-no-futuro'
+  tipo: 'humor-invalido' | 'hora-invalida' | 'hora-repetida' | 'humor-no-futuro'
   mensagem: string
 }
 
@@ -108,13 +108,13 @@ export function parse(texto: string, { diaFuturo = false }: OpcoesParse = {}): D
         atual.linhaHumor = i
         atual.colunasHumor = { de: c.de, ate: c.ate }
       } else {
-        // Dois humores no mesmo bloco sem hora/ entre eles: o segundo abre um bloco novo sem horário.
+        // Cada bloco tem no máximo um humor: o segundo abre um momento novo, sem hora.
+        // Não é erro e não ganha aviso (regra do PRODUTO.md).
         const novo = novoBloco(i, null, null, true)
         novo.humor = valor
         novo.linhaHumor = i
         novo.colunasHumor = { de: c.de, ate: c.ate }
         blocos.push(novo)
-        avisar(c, 'humor-duplicado', 'Já havia um humor neste bloco. Este abriu um bloco novo, sem horário.')
       }
     }
   })
