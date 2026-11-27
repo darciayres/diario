@@ -1,6 +1,6 @@
 /* A tela ocupa a altura inteira, mesmo com o teclado aberto (ele só fica por cima), e não rola;
    quem rola é a área do texto, por dentro. */
-.hoje {
+.dia {
   /* Altura do aviso do pé da tela (uma linha de texto e o espaço embaixo dele). */
   --altura-do-aviso: calc(env(safe-area-inset-bottom) + 33px);
   /* Tamanho do esmaecer do texto, em cima e embaixo. */
@@ -14,7 +14,7 @@
   overflow: hidden;
 }
 
-.hoje__rolagem {
+.dia__rolagem {
   height: 100%;
   overflow-y: auto;
   /* O texto esmaece do mesmo jeito em cima e embaixo, em vez de ser cortado seco:
@@ -38,7 +38,7 @@
   -webkit-overflow-scrolling: touch;
 }
 
-.hoje__coluna {
+.dia__coluna {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -56,7 +56,7 @@
    e o texto passa por baixo dele. A área vazia em volta deixa o toque chegar ao texto.
    O botão da barra lateral, à esquerda, fica na própria barra lateral (componentes/BarraLateral.css),
    porque desliza junto com ela. */
-.hoje__topo {
+.dia__topo {
   position: absolute;
   top: 0;
   left: 50%;
@@ -70,11 +70,11 @@
   pointer-events: none;
 }
 
-.hoje__topo > * {
+.dia__topo > * {
   pointer-events: auto;
 }
 
-.hoje__aviso {
+.dia__aviso {
   margin: 8px 0 0;
   padding: 8px 12px;
   border-radius: 12px;
@@ -85,8 +85,8 @@
 
 /* Aviso preso no pé da tela, solto por cima do texto, como o botão do topo. Nunca se mexe:
    no modo escrever, o teclado cobre ele e, ao descer, o revela de novo.
-   O texto esmaece antes de chegar nele (veja .hoje__rolagem). */
-.hoje__privacidade {
+   O texto esmaece antes de chegar nele (veja .dia__rolagem). */
+.dia__privacidade {
   position: absolute;
   z-index: 4;
   bottom: 0;

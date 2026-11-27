@@ -3,9 +3,12 @@ import { EditorView } from '@codemirror/view'
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { abrirBanco, carregarDia, salvarDia } from '../armazenamento/dia.ts'
-import { Hoje } from './Hoje.tsx'
+import { Dia } from './Dia.tsx'
 
 const HOJE = '2026-10-21' // uma quarta-feira
+
+/** A tela do dia de hoje. */
+const Hoje = () => <Dia data={HOJE} hoje={HOJE} />
 
 /** Acha o editor na tela (espera o dia terminar de ser lido). */
 const acharEditor = () => screen.findByRole('textbox', { name: 'Texto do dia' })
@@ -42,7 +45,7 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-describe('Tela Hoje', () => {
+describe('Tela do dia (hoje)', () => {
   it('mostra o título do dia de hoje', () => {
     render(<Hoje />)
     const titulo = screen.getByRole('heading', { level: 1 })
@@ -360,57 +363,6 @@ describe('Tela Hoje', () => {
     expect(screen.getByText(/só neste aparelho/)).toBeInTheDocument()
   })
 
-  describe('barra lateral', () => {
-    const botao = () => screen.getByRole('button', { name: /barra lateral/ })
-    const estaAberta = () => botao().getAttribute('aria-expanded') === 'true'
-
-    it('abre e fecha pelo botão do canto superior esquerdo', async () => {
-      render(<Hoje />)
-      await acharEditor()
-      expect(estaAberta()).toBe(false)
-      expect(botao()).toHaveAccessibleName('Abrir barra lateral')
-      fireEvent.click(botao())
-      expect(estaAberta()).toBe(true)
-      expect(botao()).toHaveAccessibleName('Fechar barra lateral')
-      fireEvent.click(botao())
-      expect(estaAberta()).toBe(false)
-    })
-
-    it('fecha tocando fora dela ou com a tecla Esc', async () => {
-      render(<Hoje />)
-      await acharEditor()
-      fireEvent.click(botao())
-      fireEvent.click(document.querySelector('.barra-lateral__fora')!)
-      expect(estaAberta()).toBe(false)
-      fireEvent.click(botao())
-      fireEvent.keyDown(document, { key: 'Escape' })
-      expect(estaAberta()).toBe(false)
-    })
-
-    it('mostra o que está no Figma; o que o MVP ainda não prevê não faz nada', async () => {
-      render(<Hoje />)
-      await acharEditor()
-      fireEvent.click(botao())
-      const barra = within(screen.getByRole('navigation', { name: 'Barra lateral' }))
-      for (const nome of ['Central', 'Ver calendário', 'Novo lembrete', 'Configurações']) {
-        const item = barra.getByRole('button', { name: nome })
-        expect(item).toHaveAttribute('aria-disabled', 'true')
-        fireEvent.click(item)
-        expect(estaAberta()).toBe(true)
-      }
-      expect(barra.getByText('Pesquise aqui....')).toBeInTheDocument()
-    })
-
-    it('a lista começa pelo dia de hoje, e tocar nele fecha a barra', async () => {
-      render(<Hoje />)
-      await acharEditor()
-      fireEvent.click(botao())
-      const barra = within(screen.getByRole('navigation', { name: 'Barra lateral' }))
-      fireEvent.click(barra.getByRole('button', { name: 'Hoje, Quarta-Feira (21/10/26)' }))
-      expect(estaAberta()).toBe(false)
-    })
-  })
-
   describe('transições sem tranco', () => {
     /** Simula a área visível de um celular, que encolhe quando o teclado sobe. */
     function simularCelular() {
@@ -426,7 +378,7 @@ describe('Tela Hoje', () => {
       }
     }
     const barra = () => screen.queryByRole('toolbar', { name: 'Comandos' })
-    const areaQueRola = () => document.querySelector('.hoje__rolagem') as HTMLElement
+    const areaQueRola = () => document.querySelector('.dia__rolagem') as HTMLElement
 
     it('o aviso fica preso no pé da tela, fora da área que rola, nos dois modos', async () => {
       await abrirEscrevendo()

@@ -1,11 +1,12 @@
 /* Barra lateral (Figma: "Sidebar", estados hidden e exposed). Fica por cima de toda a tela,
-   alinhada à coluna de 393 px. Fechada, só o botão aparece; o resto não recebe toques. */
+   alinhada à coluna de 393 px, com a altura da tela sem o teclado (posta pelo componente).
+   Fechada, só o botão aparece; o resto não recebe toques. */
 .barra-lateral {
-  position: absolute;
+  position: fixed;
   z-index: 20;
   top: 0;
-  bottom: 0;
   left: 50%;
+  height: 100dvh;
   width: min(100%, 393px);
   transform: translateX(-50%);
   pointer-events: none;
@@ -183,35 +184,6 @@
   border-radius: 8px;
   font: var(--tipo-corpo-xpequeno);
   color: var(--texto-secundario);
-}
-
-/* Lista de dias (Figma: "Lista de dias (Sidebar)"). A lista completa entra na tarefa 4.2. */
-.barra-lateral__lista {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 4px;
-  min-height: 0;
-}
-
-.barra-lateral__dia-da-lista {
-  display: flex;
-  align-items: flex-end;
-  gap: 8px;
-  width: 100%;
-  min-height: 44px;
-  padding: 8px;
-  border: 0;
-  border-radius: 8px;
-  background: none;
-  color: var(--texto-secundario);
-  font: var(--tipo-corpo-xpequeno);
-  text-align: left;
-  cursor: pointer;
-}
-
-.barra-lateral__dia-da-lista--hoje {
-  color: var(--acao-primaria);
 }
 
 .barra-lateral__divisoria {

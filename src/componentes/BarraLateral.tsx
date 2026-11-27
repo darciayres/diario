@@ -4,18 +4,19 @@
 //
 // Tudo o que está no Figma aparece. O que o MVP ainda não prevê (Central até a tarefa 5.4,
 // novo lembrete até a 6.5, busca, Ver calendário e Configurações) aparece, mas não faz nada.
-// A faixa da semana (tarefa 4.3) e a lista de dias (4.2) ainda são simples: só a semana de hoje
-// e o dia de hoje.
+// A lista de dias fica em ListaDeDias. A faixa da semana ainda é simples (só a semana de hoje):
+// o carrossel e os pontinhos de humor entram na tarefa 4.3.
 import { useEffect } from 'react'
 import iconeNovoLembrete from '../assets/icones/alarm_add.svg'
-import iconeSetaHoje from '../assets/icones/arrow_forward_ios_primaria.svg'
 import iconeCentral from '../assets/icones/dataset.svg'
 import iconeEspaco from '../assets/icones/dataset_vazio.svg'
 import iconeBusca from '../assets/icones/search.svg'
 import iconeConfiguracoes from '../assets/icones/settings.svg'
 import iconeBarraLateral from '../assets/icones/view_sidebar.svg'
-import { rotuloNaListaDeDias, semanaDe } from '../datas.ts'
+import { semanaDe } from '../datas.ts'
 import './BarraLateral.css'
+import { ListaDeDias } from './ListaDeDias.tsx'
+import { useAlturaSemTeclado } from './useEspacoDoTeclado.ts'
 
 type Props = {
   aberta: boolean
@@ -23,6 +24,8 @@ type Props = {
   aoFechar: () => void
   /** Hoje, no formato AAAA-MM-DD. */
   hoje: string
+  /** Abre um dia (AAAA-MM-DD); com `hora`, já no momento desse horário. */
+  aoAbrirDia: (data: string, hora?: string) => void
 }
 
 const LETRAS_DA_SEMANA = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D']
@@ -30,7 +33,10 @@ const LETRAS_DA_SEMANA = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D']
 // Botões que aparecem como no Figma, mas ainda não fazem nada no MVP.
 const semAcao = { 'aria-disabled': true, onClick: () => {} } as const
 
-export function BarraLateral({ aberta, aoAbrir, aoFechar, hoje }: Props) {
+export function BarraLateral({ aberta, aoAbrir, aoFechar, hoje, aoAbrirDia }: Props) {
+  // A mesma altura da tela do dia: a tela inteira, sem contar o teclado.
+  const alturaSemTeclado = useAlturaSemTeclado()
+
   // A tecla Esc também fecha (no computador).
   useEffect(() => {
     if (!aberta) return
@@ -40,7 +46,10 @@ export function BarraLateral({ aberta, aoAbrir, aoFechar, hoje }: Props) {
   }, [aberta, aoFechar])
 
   return (
-    <div className={`barra-lateral${aberta ? ' barra-lateral--aberta' : ''}`}>
+    <div
+      className={`barra-lateral${aberta ? ' barra-lateral--aberta' : ''}`}
+      style={alturaSemTeclado ? { height: alturaSemTeclado } : undefined}
+    >
       {/* A área fora do painel: tocar nela fecha a barra. */}
       <div className="barra-lateral__fora" aria-hidden="true" onClick={aoFechar} />
 
@@ -85,13 +94,7 @@ export function BarraLateral({ aberta, aoAbrir, aoFechar, hoje }: Props) {
               <img src={iconeBusca} alt="" width={24} height={24} />
             </div>
 
-            <div className="barra-lateral__lista">
-              <button type="button" className="barra-lateral__dia-da-lista barra-lateral__dia-da-lista--hoje" onClick={aoFechar}>
-                <img src={iconeSetaHoje} alt="" width={16} height={16} />
-                <span>{rotuloNaListaDeDias(hoje, hoje)}</span>
-              </button>
-              <hr className="barra-lateral__divisoria" />
-            </div>
+            <ListaDeDias hoje={hoje} visivel={aberta} aoAbrirDia={aoAbrirDia} />
           </div>
 
           <hr className="barra-lateral__divisoria" />

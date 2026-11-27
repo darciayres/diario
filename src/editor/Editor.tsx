@@ -13,7 +13,7 @@ import { avisos } from './avisos.ts'
 import type { Edicao } from './comandos.ts'
 import { etiquetas, posicaoDoToqueNaEtiqueta } from './etiquetas.ts'
 import { MARGEM_DO_CURSOR_EM_CIMA, MARGEM_DO_CURSOR_EMBAIXO } from './margens.ts'
-import { modoLeitura } from './modo.ts'
+import { diaFuturo as diaFuturoNoEditor, modoLeitura } from './modo.ts'
 import { regrasDoHumor } from './regrasDoHumor.ts'
 import './Editor.css'
 
@@ -37,6 +37,8 @@ export type ControleDoEditor = {
   focar: () => void
   /** Onde o cursor está na tela agora (topo e base, em pixels), ou null se não der para saber. */
   posicaoDoCursor: () => { top: number; bottom: number } | null
+  /** Onde começa a linha `linha` (a partir de 0) na tela, em pixels, ou null se não der para saber. */
+  topoDaLinha: (linha: number) => number | null
 }
 
 type Props = {
@@ -50,6 +52,10 @@ type Props = {
    * foco (e o teclado começar a subir): a tela aproveita para deixar o cursor à vista.
    */
   antesDoFoco?: () => void
+  /** O dia é hoje (algumas regras do humor só valem hoje). Padrão: true. */
+  ehHoje?: boolean
+  /** O dia ainda não chegou (humor é erro). Padrão: false. */
+  diaFuturo?: boolean
   ref?: Ref<ControleDoEditor>
 }
 
@@ -104,12 +110,14 @@ function posicaoSemRolar(view: EditorView, faixa: FaixaVisivel): number {
 /** A parte da configuração que muda entre ler e escrever. */
 const configuracaoDoModo = (modo: Modo) => [EditorView.editable.of(modo === 'escrever'), modoLeitura.of(modo === 'ler')]
 
-export function Editor({ texto, aoMudar, modo, aoMudarModo, antesDoFoco, ref }: Props) {
+export function Editor({ texto, aoMudar, modo, aoMudarModo, antesDoFoco, ehHoje = true, diaFuturo = false, ref }: Props) {
   const caixa = useRef<HTMLDivElement>(null)
   const vista = useRef<EditorView | null>(null)
   const compartimentoDoModo = useRef(new Compartment())
   const [textoInicial] = useState(texto)
   const [modoInicial] = useState(modo)
+  // O dia não muda com o editor aberto (a tela cria um editor novo para cada dia).
+  const [dia] = useState(() => ({ ehHoje, diaFuturo }))
   const aoMudarAtual = useRef(aoMudar)
   const aoMudarModoAtual = useRef(aoMudarModo)
   const antesDoFocoAtual = useRef(antesDoFoco)
@@ -168,10 +176,12 @@ export function Editor({ texto, aoMudar, modo, aoMudarModo, antesDoFoco, ref }: 
           compartimentoDoModo.current.of(configuracaoDoModo(modoInicial)),
           // Dia vazio: dica em cinza, que some assim que a pessoa começa a escrever.
           placeholder('Escreva aqui...'),
+          // Num dia que ainda não chegou, humor/ é erro: não vira etiqueta e ganha aviso.
+          diaFuturoNoEditor.of(dia.diaFuturo),
           etiquetas(),
           avisos(),
-          // Por enquanto só existe o dia de hoje; os outros dias chegam na Fase 4.
-          regrasDoHumor({ horaAtual: () => horaAgora(), hoje: true }),
+          // Em dias passados e futuros, o editor nunca insere a hora atual (veja o PRODUTO.md).
+          regrasDoHumor({ horaAtual: () => horaAgora(), hoje: dia.ehHoje }),
           // No modo ler, tocar no texto passa para o modo escrever, com o cursor onde a pessoa tocou.
           EditorView.domEventHandlers({
             click(evento, view) {
@@ -210,7 +220,7 @@ export function Editor({ texto, aoMudar, modo, aoMudarModo, antesDoFoco, ref }: 
       view.destroy()
       vista.current = null
     }
-  }, [textoInicial, modoInicial])
+  }, [textoInicial, modoInicial, dia])
 
   // Se o modo mudar por fora (ex.: o teclado desceu), o editor acompanha.
   useEffect(() => {
@@ -249,6 +259,11 @@ export function Editor({ texto, aoMudar, modo, aoMudarModo, antesDoFoco, ref }: 
       entrarNaEscrita(view, (v) =>
         faixaVisivel ? posicaoSemRolar(v, faixaVisivel) : fimDoEscrito(v.state.doc.toString()),
       )
+    },
+    topoDaLinha(linha) {
+      const view = vista.current
+      if (!view || linha < 0 || linha >= view.state.doc.lines) return null
+      return view.coordsAtPos(view.state.doc.line(linha + 1).from)?.top ?? null
     },
     posicaoDoCursor() {
       const view = vista.current

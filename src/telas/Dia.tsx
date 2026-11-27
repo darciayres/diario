@@ -1,6 +1,8 @@
-// Tela Hoje (quadros "V2 TELA | Diário Leitor" e "V2 TELA | Diário Escritor" do Figma).
+// Tela de um dia: hoje, um dia passado ou um futuro (quadros "V2 TELA | Diário Leitor" e
+// "V2 TELA | Diário Escritor" do Figma, e as versões "passado" e "futuro").
 // Abre no modo ler. Tocar no texto ou no botão de escrever passa para o modo escrever;
 // no celular, fechar o teclado volta para o modo ler.
+// Em dias que não são hoje valem as regras de "Dias que não são hoje" do PRODUTO.md.
 //
 // A tela funciona como um app, em camadas: a página fica parada e só a área do texto rola por
 // dentro. O botão do topo e o aviso do pé ficam soltos por cima do texto e nunca se mexem.
@@ -9,15 +11,16 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import { AlternarModo, type Modo } from '../componentes/AlternarModo.tsx'
 import { BarraDeComandos } from '../componentes/BarraDeComandos.tsx'
-import { BarraLateral } from '../componentes/BarraLateral.tsx'
 import { TituloDia } from '../componentes/TituloDia.tsx'
 import { useAlturaSemTeclado, useEspacoDoTeclado } from '../componentes/useEspacoDoTeclado.ts'
-import { dataDeHoje, horaAgora } from '../datas.ts'
+import { horaAgora } from '../datas.ts'
 import { escreverHumor, inserirHora } from '../editor/comandos.ts'
 import { Editor, type ControleDoEditor, type FaixaVisivel } from '../editor/Editor.tsx'
 import { MARGEM_DO_CURSOR_EM_CIMA, MARGEM_DO_CURSOR_EMBAIXO } from '../editor/margens.ts'
 import { useTextoDoDia } from '../editor/useTextoDoDia.ts'
-import './Hoje.css'
+import type { IrParaHora } from '../navegacao.ts'
+import { parse } from '../parser/index.ts'
+import './Dia.css'
 
 // Abaixo disso (em pixels) o teclado conta como fechado; acima, como aberto.
 // A folga evita confundir com a barra de endereço do navegador aparecendo e sumindo.
@@ -69,6 +72,9 @@ function distanciaAteAFaixa(cursor: { top: number; bottom: number }, faixa: Faix
  */
 const paginaEmpurrada = () => window.scrollY !== 0 || (window.visualViewport?.offsetTop ?? 0) > 1
 
+// Altura do teclado da última vez que ele abriu. Fica fora da tela para valer em todos os dias.
+const alturaConhecidaDoTeclado = { current: 0 }
+
 /**
  * Rola a área do texto com a rolagem suave do próprio navegador: o celular a faz sem redesenhar
  * o texto a cada quadro (fica fluida), e um toque do dedo a interrompe naturalmente.
@@ -79,13 +85,20 @@ function rolarSuave(area: HTMLElement, distancia: number) {
   else area.scrollTop += distancia
 }
 
-export function Hoje() {
-  // O dia é fixado ao abrir a tela: se passar da meia-noite com o app aberto,
-  // o texto continua indo para o dia em que a pessoa começou a escrever.
-  const [data] = useState(() => dataDeHoje())
+type Props = {
+  /** O dia mostrado, no formato AAAA-MM-DD. */
+  data: string
+  /** Hoje, no formato AAAA-MM-DD (fixado ao abrir o app). */
+  hoje: string
+  /** Pedido para ir até um horário (ex.: veio de um horário da lista de dias da barra lateral). */
+  irParaHora?: IrParaHora
+}
+
+export function Dia({ data, hoje, irParaHora }: Props) {
+  const ehHoje = data === hoje
+  const diaFuturo = data > hoje
   const { texto, fase, falhouSalvar, alterar } = useTextoDoDia(data)
   const [modo, setModo] = useState<Modo>('ler')
-  const [barraLateralAberta, setBarraLateralAberta] = useState(false)
   const editor = useRef<ControleDoEditor>(null)
 
   const alturaSemTeclado = useAlturaSemTeclado()
@@ -124,9 +137,8 @@ export function Hoje() {
     return () => window.clearTimeout(espera)
   }, [espacoDoTeclado])
 
-  // A altura do teclado, guardada da última vez que ele abriu: assim, ao entrar de novo no modo
-  // escrever, o app já sabe onde ele vai cobrir a tela.
-  const alturaConhecidaDoTeclado = useRef(0)
+  // A altura do teclado, guardada da última vez que ele abriu (em qualquer dia): assim, ao entrar
+  // de novo no modo escrever, o app já sabe onde ele vai cobrir a tela.
   useEffect(() => {
     if (tecladoAberto && !paginaEmpurrada()) alturaConhecidaDoTeclado.current = espacoDoTeclado
   }, [tecladoAberto, espacoDoTeclado])
@@ -148,6 +160,24 @@ export function Hoje() {
     const distancia = distanciaAteAFaixa(cursor, faixa)
     if (Math.abs(distancia) >= 1) rolarSuave(area, distancia)
   }, [espacoDoTeclado, modo, tecladoAbriuNaEscrita, tecladoDesceu])
+
+  // Pedido para ir até um horário (veio da lista de dias): o texto vai até aquele momento,
+  // uma vez por pedido.
+  const ultimoPedidoDeHora = useRef<IrParaHora | undefined>(undefined)
+  useEffect(() => {
+    if (fase !== 'pronto' || !irParaHora || ultimoPedidoDeHora.current === irParaHora) return
+    const linha = parse(texto, { diaFuturo }).blocos.find((b) => b.hora === irParaHora.hora)?.linhaInicial
+    if (linha === undefined) return
+    // Espera o editor aparecer na tela para medir onde fica a linha.
+    const quadro = requestAnimationFrame(() => {
+      ultimoPedidoDeHora.current = irParaHora
+      const area = rolagem.current
+      const topo = editor.current?.topoDaLinha(linha)
+      if (!area || topo == null) return
+      area.scrollTop += topo - (area.getBoundingClientRect().top + MARGEM_DO_CURSOR_EM_CIMA)
+    })
+    return () => cancelAnimationFrame(quadro)
+  }, [fase, irParaHora, texto, diaFuturo])
 
   // O Safari às vezes ainda tenta deslizar a página parada para mostrar o cursor; aqui ela volta ao lugar.
   useEffect(() => {
@@ -194,7 +224,7 @@ export function Hoje() {
 
   return (
     <main
-      className={`hoje hoje--${modo}`}
+      className={`dia dia--${modo}`}
       onFocus={(e) => e.target.classList.contains('cm-content') && setTextoSemFoco(false)}
       onBlur={(e) => e.target.classList.contains('cm-content') && setTextoSemFoco(true)}
       style={
@@ -203,8 +233,8 @@ export function Hoje() {
         } as CSSProperties
       }
     >
-      <div className="hoje__rolagem" ref={rolagem}>
-        <div className="hoje__coluna">
+      <div className="dia__rolagem" ref={rolagem}>
+        <div className="dia__coluna">
           <TituloDia data={data} />
 
           {fase === 'pronto' && (
@@ -215,18 +245,20 @@ export function Hoje() {
               modo={modo}
               aoMudarModo={setModo}
               antesDoFoco={cursorAVistaAntesDoTeclado}
+              ehHoje={ehHoje}
+              diaFuturo={diaFuturo}
             />
           )}
 
           {fase === 'erro-leitura' && (
-            <p className="hoje__aviso" role="alert">
-              Não foi possível abrir o texto de hoje. Para não apagar nada, a escrita fica bloqueada. Tente recarregar a
+            <p className="dia__aviso" role="alert">
+              Não foi possível abrir o texto deste dia. Para não apagar nada, a escrita fica bloqueada. Tente recarregar a
               página.
             </p>
           )}
 
           {falhouSalvar && (
-            <p className="hoje__aviso" role="alert">
+            <p className="dia__aviso" role="alert">
               Não foi possível salvar. O texto continua aqui na tela; o app tenta de novo na próxima alteração.
             </p>
           )}
@@ -235,14 +267,15 @@ export function Hoje() {
 
       {/* Preso no pé da tela, como o botão do topo. No modo escrever, o teclado cobre ele.
           Provisório até a tela Sobre (tarefa 7.2). */}
-      <p className="hoje__privacidade">Seus textos ficam só neste aparelho, sem criptografia.</p>
+      <p className="dia__privacidade">Seus textos ficam só neste aparelho, sem criptografia.</p>
 
       {/* Fica por cima da área que rola: o texto passa por baixo do botão. */}
-      <header className="hoje__topo">
+      <header className="dia__topo">
         {fase === 'pronto' && <AlternarModo modo={modo} aoEscolher={escolherModo} />}
       </header>
 
-      {fase === 'pronto' && mostrarBarra && (
+      {/* Em dias passados e futuros, a barra não tem nenhum botão para mostrar no MVP: não aparece. */}
+      {fase === 'pronto' && ehHoje && mostrarBarra && (
         <BarraDeComandos
           tecladoAberto={tecladoAberto}
           espacoDoTeclado={espacoDoTeclado}
@@ -252,14 +285,6 @@ export function Hoje() {
           aoTocar={() => editor.current?.focar()}
         />
       )}
-
-      {/* Por cima de tudo. O botão dela fica no canto superior esquerdo, na linha do botão ler/escrever. */}
-      <BarraLateral
-        aberta={barraLateralAberta}
-        aoAbrir={() => setBarraLateralAberta(true)}
-        aoFechar={() => setBarraLateralAberta(false)}
-        hoje={data}
-      />
     </main>
   )
 }

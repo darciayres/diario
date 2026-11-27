@@ -1,7 +1,7 @@
 // Nos testes não existe navegador de verdade; este pacote simula o IndexedDB.
 import 'fake-indexeddb/auto'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { abrirBanco, carregarDia, salvarDia } from './dia.ts'
+import { abrirBanco, carregarDia, carregarDias, salvarDia } from './dia.ts'
 
 beforeEach(async () => {
   const banco = await abrirBanco()
@@ -71,5 +71,17 @@ describe('proteção dos dados', () => {
       throw new Error('armazenamento bloqueado')
     })
     await expect(carregarDia('2026-11-26')).rejects.toThrow()
+  })
+})
+
+describe('carregar vários dias', () => {
+  it('devolve o texto de cada dia pedido que tem registro', async () => {
+    await salvarDia('2026-10-19', 'ontem')
+    await salvarDia('2026-10-20', 'hoje')
+    await salvarDia('2026-10-10', 'fora da lista')
+    expect(await carregarDias(['2026-10-20', '2026-10-19', '2026-10-18'])).toEqual({
+      '2026-10-20': 'hoje',
+      '2026-10-19': 'ontem',
+    })
   })
 })

@@ -72,7 +72,7 @@
   background: var(--fundo-app);
 }
 
-/* A página fica parada; quem rola é a área do texto, dentro da tela (veja telas/Hoje.css). */
+/* A página fica parada; quem rola é a área do texto, dentro da tela (veja telas/Dia.css). */
 html,
 body {
   height: 100%;

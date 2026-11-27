@@ -1,0 +1,121 @@
+/* Lista de dias da barra lateral (Figma: "Lista de dias (Sidebar)"). Cada linha tem pelo menos
+   44 px de altura, para o toque (no Figma, 33 px). */
+.lista-de-dias {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 0;
+}
+
+.lista-de-dias ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lista-de-dias__divisoria {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-top: 1px solid var(--borda-padrao);
+}
+
+/* Os dias anteriores rolam dentro da barra; hoje e a linha ficam parados em cima. */
+.lista-de-dias__anteriores {
+  flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* Linha do dia: a setinha (mostra os horários) e o nome (abre o dia). */
+.lista-de-dias__linha {
+  display: flex;
+  align-items: center;
+}
+
+.lista-de-dias__seta,
+.lista-de-dias__nome,
+.lista-de-dias__horario {
+  border: 0;
+  background: none;
+  font: var(--tipo-corpo-xpequeno);
+  color: var(--texto-secundario);
+  text-align: left;
+  cursor: pointer;
+}
+
+/* 8 px antes da setinha e 8 px depois, como no Figma. A área de toque vai um pouco além do
+   desenho, para ter 44 px de largura. */
+.lista-de-dias__seta {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 44px;
+  padding: 0;
+}
+
+/* Só a setinha de verdade (um botão) ganha a área de toque maior. */
+button.lista-de-dias__seta::after {
+  content: '';
+  position: absolute;
+  inset: 0 -6px;
+}
+
+/* A setinha aponta para baixo com os horários à mostra (Figma: Smart Animate, 0,18 s). */
+.lista-de-dias__seta img {
+  transition: transform 0.18s ease-in;
+}
+
+.lista-de-dias__dia--aberto .lista-de-dias__seta img {
+  transform: rotate(90deg);
+  transition-timing-function: ease-out;
+}
+
+.lista-de-dias__nome {
+  flex: 1;
+  min-height: 44px;
+  padding: 0 8px 0 0;
+}
+
+.lista-de-dias__dia--hoje .lista-de-dias__nome {
+  color: var(--acao-primaria);
+}
+
+/* Horários: abrem e fecham deslizando (a altura vai de 0 até a da lista). */
+.lista-de-dias__horarios {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.18s ease-in;
+}
+
+.lista-de-dias__dia--aberto .lista-de-dias__horarios {
+  grid-template-rows: 1fr;
+  transition-timing-function: ease-out;
+}
+
+.lista-de-dias__horarios > ul {
+  min-height: 0;
+  overflow: hidden;
+  padding: 0 32px;
+}
+
+.lista-de-dias__horario {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  padding: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lista-de-dias__seta img,
+  .lista-de-dias__horarios {
+    transition: none;
+  }
+}

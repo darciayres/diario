@@ -6,7 +6,7 @@ import { StateField, type EditorState, type Extension } from '@codemirror/state'
 import { Decoration, EditorView, WidgetType, type DecorationSet } from '@codemirror/view'
 import { NOMES_DO_HUMOR } from '../humor.ts'
 import { parse } from '../parser/index.ts'
-import { modoLeitura } from './modo.ts'
+import { diaFuturo as ehDiaFuturo, modoLeitura } from './modo.ts'
 
 /** Um pedaço do texto que vira etiqueta, ou que aparece como texto destacado (cursor em cima). */
 export type Trecho =
@@ -29,7 +29,7 @@ type Selecao = { from: number; to: number }
 type Comando = { de: number; ate: number; linha: number; tipo: 'hora' | 'humor'; valor: string | number }
 
 /** Função pura: diz quais trechos do texto viram etiqueta e quais ficam destacados. */
-export function calcularTrechos(texto: string, selecoes: readonly Selecao[]): Trecho[] {
+export function calcularTrechos(texto: string, selecoes: readonly Selecao[], diaFuturo = false): Trecho[] {
   const linhas = texto.split('\n')
   const inicioDaLinha: number[] = []
   let pos = 0
@@ -47,7 +47,7 @@ export function calcularTrechos(texto: string, selecoes: readonly Selecao[]): Tr
 
   // Só os comandos válidos viram etiqueta; o parser já decidiu quais são e onde estão.
   const grupos: Comando[][] = []
-  for (const bloco of parse(texto).blocos) {
+  for (const bloco of parse(texto, { diaFuturo }).blocos) {
     const hora: Comando | null =
       bloco.hora !== null && bloco.colunasHora
         ? {
@@ -168,7 +168,7 @@ const linhaDeEtiquetas = Decoration.line({ class: 'linha-etiquetas' })
 function decorar(state: EditorState): DecorationSet {
   // No modo ler, todos os comandos aparecem como etiqueta, esteja o cursor onde estiver.
   const selecoes = state.facet(modoLeitura) ? [] : state.selection.ranges
-  const trechos = calcularTrechos(state.doc.toString(), selecoes)
+  const trechos = calcularTrechos(state.doc.toString(), selecoes, state.facet(ehDiaFuturo))
   const decoracoes = []
   for (const t of trechos) {
     if (t.tipo === 'ativo') {
@@ -186,8 +186,13 @@ function decorar(state: EditorState): DecorationSet {
  * Onde pôr o cursor ao tocar numa etiqueta: logo depois do comando tocado
  * (ex.: depois do 4 em `humor/4`), para a pessoa já poder trocar o valor.
  */
-export function posicaoAoTocar(texto: string, inicioDaEtiqueta: number, tocou: 'hora' | 'humor' | null): number | null {
-  const trecho = calcularTrechos(texto, []).find((t) => t.tipo === 'etiqueta' && t.de === inicioDaEtiqueta)
+export function posicaoAoTocar(
+  texto: string,
+  inicioDaEtiqueta: number,
+  tocou: 'hora' | 'humor' | null,
+  diaFuturo = false,
+): number | null {
+  const trecho = calcularTrechos(texto, [], diaFuturo).find((t) => t.tipo === 'etiqueta' && t.de === inicioDaEtiqueta)
   if (!trecho || trecho.tipo !== 'etiqueta') return null
   if (tocou === 'hora' && trecho.fimHora !== null) return trecho.fimHora
   if (tocou === 'humor' && trecho.fimHumor !== null) return trecho.fimHumor
@@ -200,7 +205,7 @@ export function posicaoDoToqueNaEtiqueta(evento: MouseEvent, view: EditorView): 
   const fileira = alvo?.closest('.etiquetas')
   if (!fileira) return null
   const tocou = alvo?.closest('.etiqueta--hora') ? 'hora' : alvo?.closest('.etiqueta--humor') ? 'humor' : null
-  return posicaoAoTocar(view.state.doc.toString(), view.posAtDOM(fileira), tocou)
+  return posicaoAoTocar(view.state.doc.toString(), view.posAtDOM(fileira), tocou, view.state.facet(ehDiaFuturo))
 }
 
 const aoTocarNaEtiqueta = EditorView.domEventHandlers({

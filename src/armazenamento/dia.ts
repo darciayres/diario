@@ -37,6 +37,24 @@ export async function carregarDia(data: string): Promise<string> {
   }
 }
 
+/**
+ * Lê de uma vez o texto de vários dias (ex.: para a lista de dias da barra lateral).
+ * Dias sem registro ficam de fora. Se o navegador não deixar ler, dá erro.
+ */
+export async function carregarDias(datas: readonly string[]): Promise<Record<string, string>> {
+  const banco = await abrirBanco()
+  try {
+    const tx = banco.transaction('dias', 'readonly')
+    const registros = await Promise.all(datas.map((data) => tx.store.get(data)))
+    await tx.done
+    const textos: Record<string, string> = {}
+    for (const registro of registros) if (registro) textos[registro.data] = registro.texto
+    return textos
+  } finally {
+    banco.close()
+  }
+}
+
 /** Salva o texto do dia. Devolve false se o navegador recusar (armazenamento cheio, bloqueado etc.). */
 export async function salvarDia(data: string, texto: string): Promise<boolean> {
   // Uma data mal formada criaria um "dia" fantasma; melhor recusar.
