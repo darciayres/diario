@@ -34,7 +34,7 @@
      Embaixo: espaço vazio depois do texto, igual nos dois modos (assim a tela não se mexe ao
      trocar de modo). Ele deixa o fim do texto subir até a parte de cima da tela, longe do
      teclado, da barra de comandos e do aviso do pé da tela. */
-  padding: calc(env(safe-area-inset-top) + 76px) 20px max(96px, 60svh);
+  padding: calc(env(safe-area-inset-top) + 76px) 20px max(96px, calc(var(--altura-sem-teclado, 100svh) * 0.6));
 }
 
 /* Linha de botões do topo (Figma: "botões superiores"). Sem faixa: só o botão flutua

@@ -359,4 +359,89 @@ describe('Tela Hoje', () => {
     render(<Hoje />)
     expect(screen.getByText(/só neste aparelho/)).toBeInTheDocument()
   })
+
+  describe('transições sem tranco', () => {
+    /** Simula a área visível de um celular, que encolhe quando o teclado sobe. */
+    function simularCelular() {
+      const areaVisivel = Object.assign(new EventTarget(), { height: window.innerHeight, offsetTop: 0, width: window.innerWidth })
+      Object.defineProperty(window, 'visualViewport', { value: areaVisivel, configurable: true })
+      return {
+        mudarTeclado: (altura: number) =>
+          act(() => {
+            areaVisivel.height = window.innerHeight - altura
+            areaVisivel.dispatchEvent(new Event('resize'))
+          }),
+        desfazer: () => Object.defineProperty(window, 'visualViewport', { value: undefined, configurable: true }),
+      }
+    }
+    const barra = () => screen.queryByRole('toolbar', { name: 'Comandos' })
+    const areaQueRola = () => document.querySelector('.hoje__rolagem') as HTMLElement
+
+    it('o aviso fica preso no pé da tela, fora da área que rola, nos dois modos', async () => {
+      await abrirEscrevendo()
+      const aviso = screen.getByText(/só neste aparelho/)
+      expect(areaQueRola()).not.toContainElement(aviso)
+      fireEvent.click(screen.getByRole('button', { name: 'Ler' }))
+      expect(screen.getByText(/só neste aparelho/)).toBe(aviso)
+    })
+
+    it('voltar para o modo ler não mexe na rolagem', async () => {
+      await abrirEscrevendo()
+      areaQueRola().scrollTop = 250
+      fireEvent.click(screen.getByRole('button', { name: 'Ler' }))
+      expect(areaQueRola().scrollTop).toBe(250)
+    })
+
+    it('trocar de modo várias vezes seguidas termina no modo do último toque', async () => {
+      const editor = await abrirEscrevendo()
+      for (let i = 0; i < 5; i++) {
+        fireEvent.click(screen.getByRole('button', { name: 'Ler' }))
+        fireEvent.click(screen.getByRole('button', { name: 'Escrever' }))
+      }
+      fireEvent.click(screen.getByRole('button', { name: 'Ler' }))
+      expect(editor).toHaveAttribute('contenteditable', 'false')
+      expect(barra()).not.toBeInTheDocument()
+    })
+
+    it('se o teclado só piscar, a barra some e volta, e o dia continua no modo escrever', async () => {
+      const celular = simularCelular()
+      try {
+        const editor = await abrirEscrevendo()
+        celular.mudarTeclado(300)
+        expect(barra()).toBeInTheDocument()
+        celular.mudarTeclado(0)
+        expect(barra()).not.toBeInTheDocument()
+        celular.mudarTeclado(300)
+        expect(barra()).toBeInTheDocument()
+        await act(() => new Promise((r) => setTimeout(r, 500)))
+        expect(editor).toHaveAttribute('contenteditable', 'true')
+      } finally {
+        celular.desfazer()
+      }
+    })
+
+    it('antes de o teclado subir, a barra já aparece (no computador não há teclado na tela)', async () => {
+      const celular = simularCelular()
+      try {
+        await abrirEscrevendo()
+        expect(barra()).toBeInTheDocument()
+      } finally {
+        celular.desfazer()
+      }
+    })
+
+    it('ao entrar de novo no modo escrever, a barra volta mesmo que o teclado tenha descido antes', async () => {
+      const celular = simularCelular()
+      try {
+        const editor = await abrirEscrevendo()
+        celular.mudarTeclado(300)
+        celular.mudarTeclado(0)
+        await waitFor(() => expect(editor).toHaveAttribute('contenteditable', 'false'))
+        fireEvent.click(screen.getByRole('button', { name: 'Escrever' }))
+        expect(barra()).toBeInTheDocument()
+      } finally {
+        celular.desfazer()
+      }
+    })
+  })
 })
