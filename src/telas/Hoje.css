@@ -39,9 +39,6 @@
 }
 
 .hoje__coluna {
-  /* Permite o deslizar do texto (veja deslizar em Hoje.tsx). */
-  position: relative;
-  top: 0;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;

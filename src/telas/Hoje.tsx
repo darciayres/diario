@@ -13,7 +13,7 @@ import { TituloDia } from '../componentes/TituloDia.tsx'
 import { useAlturaSemTeclado, useEspacoDoTeclado } from '../componentes/useEspacoDoTeclado.ts'
 import { dataDeHoje, horaAgora } from '../datas.ts'
 import { escreverHumor, inserirHora } from '../editor/comandos.ts'
-import { Editor, type ControleDoEditor } from '../editor/Editor.tsx'
+import { Editor, type ControleDoEditor, type FaixaVisivel } from '../editor/Editor.tsx'
 import { MARGEM_DO_CURSOR_EM_CIMA, MARGEM_DO_CURSOR_EMBAIXO } from '../editor/margens.ts'
 import { useTextoDoDia } from '../editor/useTextoDoDia.ts'
 import './Hoje.css'
@@ -25,34 +25,43 @@ const TECLADO_ABERTO = 150
 // Quanto tempo (em milissegundos) o teclado precisa ficar fechado para o dia voltar ao modo ler.
 const ESPERA_TECLADO_FECHADO = 400
 
-// Antes de o teclado subir, o cursor fica nesta fração de cima da tela (o teclado cobre o resto).
+// Antes de o teclado subir pela primeira vez (sem saber a altura dele), o cursor fica nesta
+// fração de cima da tela, que o teclado não cobre.
 const PARTE_LIVRE_DO_TECLADO = 0.4
-// Duração do deslizar do texto, igual às animações do Figma (0,3 s).
-const DURACAO_DESLIZAR = 300
 
 /** true em telas de toque (celular, tablet), onde o teclado aparece na tela. */
 const ehTelaDeToque = () => window.matchMedia?.('(pointer: coarse)').matches ?? false
 
-// O deslizar mexe na posição (top) e não em "transform": no iPhone, uma animação de transform
-// leva um ou dois quadros para começar, e nesse intervalo o texto aparecia já no lugar final (um "pisca").
-
-/** Para o deslizar em andamento e devolve quanto o texto estava deslocado naquele instante. */
-function pararDeslizar(elemento: HTMLElement): number {
-  const animacoes = elemento.getAnimations?.() ?? []
-  if (animacoes.length === 0) return 0
-  const deslocamento = parseFloat(getComputedStyle(elemento).top) || 0
-  animacoes.forEach((animacao) => animacao.cancel())
-  return deslocamento
+/**
+ * Faixa da área do texto onde o cursor fica à vista: abaixo do botão do topo e acima do teclado
+ * (e da barra de comandos). Antes de o teclado subir, conta com o lugar onde ele vai abrir.
+ */
+function faixaVisivel(
+  area: HTMLElement,
+  espacoDoTeclado: number,
+  tecladoJaAberto: boolean,
+  alturaConhecidaDoTeclado: number,
+): FaixaVisivel | undefined {
+  const caixa = area.getBoundingClientRect()
+  if (caixa.height === 0) return undefined
+  const cima = caixa.top + MARGEM_DO_CURSOR_EM_CIMA
+  if (tecladoJaAberto || !ehTelaDeToque()) {
+    return { cima, baixo: caixa.bottom - espacoDoTeclado - MARGEM_DO_CURSOR_EMBAIXO }
+  }
+  if (alturaConhecidaDoTeclado) {
+    return { cima, baixo: caixa.bottom - alturaConhecidaDoTeclado - MARGEM_DO_CURSOR_EMBAIXO }
+  }
+  return { cima, baixo: caixa.top + caixa.height * PARTE_LIVRE_DO_TECLADO }
 }
 
-/** Faz o texto sair de `distancia` pixels abaixo (ou acima) e deslizar até o lugar certo. */
-function deslizar(elemento: HTMLElement, distancia: number) {
-  if (Math.abs(distancia) < 1 || typeof elemento.animate !== 'function') return
-  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
-  elemento.animate([{ top: `${distancia}px` }, { top: '0px' }], {
-    duration: DURACAO_DESLIZAR,
-    easing: 'ease-out',
-  })
+/**
+ * Rola a área do texto com a rolagem suave do próprio navegador: o celular a faz sem redesenhar
+ * o texto a cada quadro (fica fluida), e um toque do dedo a interrompe naturalmente.
+ */
+function rolarSuave(area: HTMLElement, distancia: number) {
+  const menosMovimento = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
+  if (typeof area.scrollBy === 'function') area.scrollBy({ top: distancia, behavior: menosMovimento ? 'auto' : 'smooth' })
+  else area.scrollTop += distancia
 }
 
 export function Hoje() {
@@ -99,69 +108,28 @@ export function Hoje() {
     return () => window.clearTimeout(espera)
   }, [espacoDoTeclado])
 
-  // Quando o teclado abre ou fecha, ou o modo muda, o texto pode precisar mudar de lugar:
-  // no modo escrever, rola até o cursor ficar à vista, acima do teclado.
-  // Em vez de pular de uma vez, o texto desliza da posição antiga até a nova.
-  const rolagem = useRef<HTMLDivElement>(null)
-  const coluna = useRef<HTMLDivElement>(null)
-  const rolagemAnterior = useRef(0)
+  // A altura do teclado, guardada da última vez que ele abriu: assim, ao entrar de novo no modo
+  // escrever, o app já sabe onde ele vai cobrir a tela.
+  const alturaConhecidaDoTeclado = useRef(0)
   useEffect(() => {
-    const area = rolagem.current
-    if (!area) return
-    const anotar = () => {
-      rolagemAnterior.current = area.scrollTop
-    }
-    // Se a pessoa encostar o dedo (ou rolar com o mouse) enquanto o texto desliza, o deslizar para e
-    // a rolagem assume a posição em que o texto estava: o texto não foge do dedo nem pula.
-    const assumirDeslizar = () => {
-      const conteudo = coluna.current
-      if (!conteudo) return
-      const deslocamento = pararDeslizar(conteudo)
-      if (deslocamento) area.scrollTop -= deslocamento
-    }
-    area.addEventListener('scroll', anotar, { passive: true })
-    area.addEventListener('touchstart', assumirDeslizar, { passive: true })
-    area.addEventListener('wheel', assumirDeslizar, { passive: true })
-    return () => {
-      area.removeEventListener('scroll', anotar)
-      area.removeEventListener('touchstart', assumirDeslizar)
-      area.removeEventListener('wheel', assumirDeslizar)
-    }
-  }, [])
+    if (tecladoAberto) alturaConhecidaDoTeclado.current = espacoDoTeclado
+  }, [tecladoAberto, espacoDoTeclado])
 
+  // No modo escrever, o cursor fica sempre à vista, acima do teclado. Pelo botão do topo, ele já
+  // nasce dentro da faixa visível e nada rola; ao tocar numa linha que o teclado vai cobrir, ou
+  // quando o teclado abre, o texto rola suavemente até o cursor.
+  const rolagem = useRef<HTMLDivElement>(null)
   useLayoutEffect(() => {
     const area = rolagem.current
-    const conteudo = coluna.current
-    if (!area || !conteudo) return
-    const deslocamento = pararDeslizar(conteudo)
-    // Onde a rolagem estava antes desta mudança. Em geral é a de agora; mas, se a área do texto
-    // cresceu e a rolagem foi cortada no fim, vale a última posição anotada antes do corte.
-    const lida = area.scrollTop
-    const cortada = lida >= area.scrollHeight - area.clientHeight - 1 && rolagemAnterior.current > lida
-    const antes = cortada ? rolagemAnterior.current : lida
-
     // Quando o teclado desce, o dia está voltando para o modo ler: nada rola.
-    if (modo === 'escrever' && !tecladoDesceu) {
-      const cursor = editor.current?.posicaoDoCursor()
-      if (cursor) {
-        const caixa = area.getBoundingClientRect()
-        // Antes de o teclado subir, o cursor fica na parte de cima, onde o teclado não vai cobrir;
-        // assim o Safari não precisa empurrar a página quando o teclado subir.
-        // Com o teclado aberto, o cursor fica acima dele e da barra de comandos (o teclado cobre
-        // a parte de baixo da área do texto, sem encolhê-la).
-        const limiteDeBaixo =
-          ehTelaDeToque() && !tecladoAbriuNaEscrita
-            ? caixa.top + caixa.height * PARTE_LIVRE_DO_TECLADO
-            : caixa.bottom - espacoDoTeclado - MARGEM_DO_CURSOR_EMBAIXO
-        const limiteDeCima = caixa.top + MARGEM_DO_CURSOR_EM_CIMA
-        if (cursor.bottom > limiteDeBaixo) area.scrollTop += cursor.bottom - limiteDeBaixo
-        else if (cursor.top < limiteDeCima) area.scrollTop -= limiteDeCima - cursor.top
-      }
-    }
-
-    const depois = area.scrollTop
-    rolagemAnterior.current = depois
-    deslizar(conteudo, depois - antes + deslocamento)
+    if (!area || modo !== 'escrever' || tecladoDesceu) return
+    const cursor = editor.current?.posicaoDoCursor()
+    const faixa = faixaVisivel(area, espacoDoTeclado, tecladoAbriuNaEscrita, alturaConhecidaDoTeclado.current)
+    if (!cursor || !faixa) return
+    let distancia = 0
+    if (cursor.bottom > faixa.baixo) distancia = cursor.bottom - faixa.baixo
+    else if (cursor.top < faixa.cima) distancia = cursor.top - faixa.cima
+    if (Math.abs(distancia) >= 1) rolarSuave(area, distancia)
   }, [espacoDoTeclado, modo, tecladoAbriuNaEscrita, tecladoDesceu])
 
   // O Safari às vezes ainda tenta deslizar a página parada para mostrar o cursor; aqui ela volta ao lugar.
@@ -179,8 +147,14 @@ export function Hoje() {
   }, [])
 
   function escolherModo(novo: Modo) {
-    if (novo === 'escrever') editor.current?.escrever()
-    else editor.current?.ler()
+    if (novo !== 'escrever') {
+      editor.current?.ler()
+      return
+    }
+    // Pelo botão do topo, o cursor nasce dentro da parte visível acima do teclado: nada rola.
+    const area = rolagem.current
+    const faixa = area ? faixaVisivel(area, espacoDoTeclado, false, alturaConhecidaDoTeclado.current) : undefined
+    editor.current?.escrever(faixa)
   }
 
   return (
@@ -195,7 +169,7 @@ export function Hoje() {
       }
     >
       <div className="hoje__rolagem" ref={rolagem}>
-        <div className="hoje__coluna" ref={coluna}>
+        <div className="hoje__coluna">
           <TituloDia data={data} />
 
           {fase === 'pronto' && (

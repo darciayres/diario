@@ -17,15 +17,20 @@ import { modoLeitura } from './modo.ts'
 import { regrasDoHumor } from './regrasDoHumor.ts'
 import './Editor.css'
 
+/** Parte da tela onde o cursor fica à vista (abaixo do botão do topo e acima do teclado), em pixels. */
+export type FaixaVisivel = { cima: number; baixo: number }
+
 /** O que a tela pode pedir ao editor. */
 export type ControleDoEditor = {
   /** Aplica uma edição a partir do texto e do cursor atuais, como se a pessoa tivesse escrito. */
   editar: (calcular: (texto: string, cursor: number) => Edicao) => void
   /**
    * Passa para o modo escrever, com o cursor no fim da última coisa escrita.
+   * Com `faixaVisivel` (de cima a baixo, em pixels da tela), a tela não precisa rolar: se o fim
+   * do escrito estiver fora dessa faixa, o cursor vai para o fim da última linha dentro dela.
    * Precisa ser chamado dentro do toque da pessoa: só assim o celular deixa o teclado subir.
    */
-  escrever: () => void
+  escrever: (faixaVisivel?: FaixaVisivel) => void
   /** Passa para o modo ler (o teclado desce). */
   ler: () => void
   /** Devolve o foco ao texto, se estiver no modo escrever (o teclado continua aberto). */
@@ -68,6 +73,29 @@ const ESPERA_SEM_FOCO = 300
  */
 const fimDoEscrito = (texto: string) => texto.trimEnd().length
 
+/**
+ * Onde pôr o cursor sem a tela precisar rolar: no fim da última coisa escrita, se ele estiver
+ * dentro da faixa visível; se não, no fim da última linha dentro dela.
+ */
+function posicaoSemRolar(view: EditorView, faixa: FaixaVisivel): number {
+  const fim = fimDoEscrito(view.state.doc.toString())
+  const dentro = (pos: number) => {
+    const onde = view.coordsAtPos(pos)
+    return onde !== null && onde.top >= faixa.cima && onde.bottom <= faixa.baixo
+  }
+  if (dentro(fim)) return fim
+  // Procura de baixo para cima a última linha (como aparece na tela) inteira dentro da faixa,
+  // tocando no fim dela (na borda direita do texto).
+  const direita = view.contentDOM.getBoundingClientRect().right - 1
+  const passo = view.defaultLineHeight / 2
+  for (let y = faixa.baixo - passo; y >= faixa.cima; y -= passo) {
+    const pos = Math.min(view.posAtCoords({ x: direita, y }, false), fim)
+    if (dentro(pos)) return pos
+  }
+  // Nenhuma linha escrita à vista (ex.: a pessoa rolou para o espaço vazio depois do texto).
+  return fim
+}
+
 /** A parte da configuração que muda entre ler e escrever. */
 const configuracaoDoModo = (modo: Modo) => [EditorView.editable.of(modo === 'escrever'), modoLeitura.of(modo === 'ler')]
 
@@ -85,13 +113,14 @@ export function Editor({ texto, aoMudar, modo, aoMudarModo, ref }: Props) {
     aoMudarModoAtual.current = aoMudarModo
   })
 
-  /** Liga o modo escrever e põe o cursor em `pos`, tudo de uma vez (o celular exige isso para mostrar o teclado). */
-  function entrarNaEscrita(view: EditorView, pos: number) {
-    view.dispatch({
-      effects: compartimentoDoModo.current.reconfigure(configuracaoDoModo('escrever')),
-      selection: { anchor: pos },
-    })
-    // A tela (Hoje) cuida de deslizar o texto até o cursor, sem pulo.
+  /**
+   * Liga o modo escrever e põe o cursor em `pos` (ou onde `calcularPos` mandar, medido já com o
+   * texto do modo escrever), tudo no mesmo toque (o celular exige isso para mostrar o teclado).
+   */
+  function entrarNaEscrita(view: EditorView, pos: number | ((view: EditorView) => number)) {
+    view.dispatch({ effects: compartimentoDoModo.current.reconfigure(configuracaoDoModo('escrever')) })
+    view.dispatch({ selection: { anchor: typeof pos === 'number' ? pos : pos(view) } })
+    // Se o cursor ficar onde o teclado vai cobrir, a tela (Hoje) rola até ele, suavemente.
     view.focus()
     aoMudarModoAtual.current('escrever')
   }
@@ -205,9 +234,12 @@ export function Editor({ texto, aoMudar, modo, aoMudarModo, ref }: Props) {
       })
       view.focus()
     },
-    escrever() {
+    escrever(faixaVisivel) {
       const view = vista.current
-      if (view) entrarNaEscrita(view, fimDoEscrito(view.state.doc.toString()))
+      if (!view) return
+      entrarNaEscrita(view, (v) =>
+        faixaVisivel ? posicaoSemRolar(v, faixaVisivel) : fimDoEscrito(v.state.doc.toString()),
+      )
     },
     posicaoDoCursor() {
       const view = vista.current
