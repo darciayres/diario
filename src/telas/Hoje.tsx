@@ -9,7 +9,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from
 import { AlternarModo, type Modo } from '../componentes/AlternarModo.tsx'
 import { BarraDeComandos } from '../componentes/BarraDeComandos.tsx'
 import { TituloDia } from '../componentes/TituloDia.tsx'
-import { useAlturaVisivel, useEspacoDoTeclado } from '../componentes/useEspacoDoTeclado.ts'
+import { useAlturaSemTeclado, useAlturaVisivel, useEspacoDoTeclado } from '../componentes/useEspacoDoTeclado.ts'
 import { dataDeHoje, horaAgora } from '../datas.ts'
 import { escreverHumor, inserirHora } from '../editor/comandos.ts'
 import { Editor, type ControleDoEditor } from '../editor/Editor.tsx'
@@ -63,6 +63,7 @@ export function Hoje() {
   const editor = useRef<ControleDoEditor>(null)
 
   const alturaVisivel = useAlturaVisivel()
+  const alturaSemTeclado = useAlturaSemTeclado()
   const espacoDoTeclado = useEspacoDoTeclado()
   const tecladoAberto = espacoDoTeclado > TECLADO_ABERTO
 
@@ -156,7 +157,12 @@ export function Hoje() {
   return (
     <main
       className={`hoje hoje--${modo}`}
-      style={{ '--altura-visivel': alturaVisivel ? `${alturaVisivel}px` : undefined } as CSSProperties}
+      style={
+        {
+          '--altura-visivel': alturaVisivel ? `${alturaVisivel}px` : undefined,
+          '--altura-sem-teclado': alturaSemTeclado ? `${alturaSemTeclado}px` : undefined,
+        } as CSSProperties
+      }
     >
       <div className="hoje__rolagem" ref={rolagem}>
         <div className="hoje__coluna" ref={coluna}>
@@ -178,11 +184,12 @@ export function Hoje() {
               Não foi possível salvar. O texto continua aqui na tela; o app tenta de novo na próxima alteração.
             </p>
           )}
-
-          {/* Provisório até a tela Sobre (tarefa 7.2). */}
-          <p className="hoje__privacidade">Seus textos ficam só neste aparelho, sem criptografia.</p>
         </div>
       </div>
+
+      {/* Preso no pé da tela, como o botão do topo. No modo escrever, o teclado abre por cima dele.
+          Provisório até a tela Sobre (tarefa 7.2). */}
+      <p className="hoje__privacidade">Seus textos ficam só neste aparelho, sem criptografia.</p>
 
       {/* Fica por cima da área que rola: o texto passa por baixo do botão. */}
       <header className="hoje__topo">

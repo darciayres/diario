@@ -2,10 +2,10 @@
 
 .barra-comandos {
   /* Presa embaixo da tela do app, que termina logo acima do teclado.
-     Sem teclado, fica acima da barra de gestos do iPhone. */
+     Sem teclado, fica acima do aviso do pé da tela e da barra de gestos do iPhone. */
   position: absolute;
   z-index: 10;
-  bottom: calc(12px + var(--folga-inferior, env(safe-area-inset-bottom)));
+  bottom: calc(12px + var(--folga-inferior, env(safe-area-inset-bottom) + 36px));
   /* Alinhada à direita da coluna de 393 px, como no Figma. */
   right: max(20px, calc((100% - 393px) / 2 + 20px));
   display: flex;

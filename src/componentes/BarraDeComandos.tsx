@@ -37,7 +37,11 @@ export function BarraDeComandos({ tecladoAberto, aoInserirHora, aoEscolherHumor,
   return (
     <div
       className="barra-comandos"
-      style={tecladoAberto && ehSafariDoIphone() ? ({ '--folga-inferior': `${FOLGA_DO_SAFARI}px` } as CSSProperties) : undefined}
+      style={
+        tecladoAberto
+          ? ({ '--folga-inferior': `${ehSafariDoIphone() ? FOLGA_DO_SAFARI : 0}px` } as CSSProperties)
+          : undefined
+      }
       onKeyDown={(e) => e.key === 'Escape' && setHumorAberto(false)}
     >
       {/* Fica sempre na página para poder aparecer e sumir com animação; fechado, não recebe toques. */}
