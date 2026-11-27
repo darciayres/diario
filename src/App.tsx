@@ -21,6 +21,7 @@ function App() {
         aoAbrir={() => setBarraLateralAberta(true)}
         aoFechar={() => setBarraLateralAberta(false)}
         hoje={hoje}
+        diaAberto={dia}
         aoAbrirDia={(data, hora) => {
           setBarraLateralAberta(false)
           abrirDia(data, hora)

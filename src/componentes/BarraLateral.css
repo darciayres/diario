@@ -96,47 +96,6 @@
   background: var(--fundo-superficie);
 }
 
-.barra-lateral__semana {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-}
-
-.barra-lateral__letras {
-  display: flex;
-  justify-content: space-between;
-  width: 219px;
-  font: var(--tipo-corpo-pequeno);
-  color: var(--texto-secundario);
-}
-
-.barra-lateral__dias {
-  display: flex;
-  gap: 2px;
-  padding: 0 2px;
-}
-
-/* Cada dia (Figma: "Data S"). Os pontinhos de humor entram na tarefa 4.3. */
-.barra-lateral__dia {
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  width: 32px;
-  height: 40px;
-  padding-top: 5px;
-  border-radius: 8px;
-  background: var(--fundo-app);
-  color: var(--texto-principal);
-  font: var(--tipo-corpo-pequeno);
-}
-
-.barra-lateral__dia--hoje {
-  background: var(--comando-fundo-ativo);
-}
-
 .barra-lateral__acoes {
   display: flex;
   gap: 8px;

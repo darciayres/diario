@@ -136,6 +136,74 @@ describe('lista de dias', () => {
   })
 })
 
+describe('faixa da semana', () => {
+  const diasDaFaixa = () =>
+    Array.from(document.querySelectorAll('.faixa-da-semana__semana:not([inert]) .faixa-da-semana__dia')) as HTMLElement[]
+  const numeros = () => diasDaFaixa().map((d) => d.querySelector('.faixa-da-semana__numero')!.textContent)
+
+  it('mostra a semana do dia aberto, de segunda a domingo, com hoje marcado', async () => {
+    await abrirBarra()
+    expect(numeros()).toEqual(['19', '20', '21', '22', '23', '24', '25'])
+    expect(barra().getByRole('button', { name: /^Hoje, quarta, 21/ })).toHaveAttribute('aria-current', 'date')
+  })
+
+  it('um pontinho para cada humor, na cor dele; com mais de 3, três pontinhos e um +', async () => {
+    await salvarDia('2026-10-20', 'hora/08:00 humor/2\nhora/12:00 humor/4')
+    await salvarDia('2026-10-19', 'humor/1\nhumor/2\nhumor/3\nhumor/5')
+    await abrirBarra()
+    await waitFor(() => expect(barra().getByRole('button', { name: 'terça, 20: Mal, Bem' })).toBeInTheDocument())
+    const terca = barra().getByRole('button', { name: 'terça, 20: Mal, Bem' })
+    expect(Array.from(terca.querySelectorAll('.faixa-da-semana__pontinho')).map((p) => p.className)).toEqual([
+      'faixa-da-semana__pontinho faixa-da-semana__pontinho--2',
+      'faixa-da-semana__pontinho faixa-da-semana__pontinho--4',
+    ])
+    expect(terca.querySelector('.faixa-da-semana__mais')).toBeNull()
+    const segunda = barra().getByRole('button', { name: /^segunda, 19/ })
+    expect(segunda.querySelectorAll('.faixa-da-semana__pontinho')).toHaveLength(3)
+    expect(segunda.querySelector('.faixa-da-semana__mais')).not.toBeNull()
+    expect(barra().getByRole('button', { name: 'quinta, 22' }).querySelectorAll('.faixa-da-semana__pontinho')).toHaveLength(0)
+  })
+
+  it('tocar num dia passado ou futuro abre esse dia', async () => {
+    await abrirBarra()
+    fireEvent.click(barra().getByRole('button', { name: 'segunda, 19' }))
+    await waitFor(() => expect(titulo()).toContain('19 de Outubro'))
+    expect(barraEstaAberta()).toBe(false)
+    fireEvent.click(botaoDaBarra())
+    fireEvent.click(barra().getByRole('button', { name: 'sábado, 24' }))
+    await waitFor(() => expect(titulo()).toContain('24 de Outubro'))
+    expect(window.location.hash).toBe('#2026-10-24')
+  })
+
+  it('num dia futuro, humor é aviso e não vira etiqueta', async () => {
+    await salvarDia('2026-10-24', 'humor/4\nLembrar de comprar presente.')
+    window.history.replaceState(null, '', '/#2026-10-24')
+    render(<App />)
+    await acharEditor()
+    fireEvent.click(screen.getByRole('button', { name: 'Escrever' }))
+    expect(document.querySelector('.etiqueta')).toBeNull()
+  })
+
+  it('arrastando para o lado, vai para a semana seguinte ou para a anterior', async () => {
+    await abrirBarra()
+    const janela = document.querySelector('.faixa-da-semana__janela') as HTMLElement
+    const arrastar = async (de: number, ate: number) => {
+      fireEvent.pointerDown(janela, { clientX: de, pointerId: 1 })
+      fireEvent.pointerMove(janela, { clientX: (de + ate) / 2, pointerId: 1 })
+      fireEvent.pointerMove(janela, { clientX: ate, pointerId: 1 })
+      fireEvent.pointerUp(janela, { clientX: ate, pointerId: 1 })
+      await act(() => new Promise((r) => setTimeout(r, 500)))
+    }
+    await arrastar(200, 100) // para a esquerda: semana seguinte
+    expect(numeros()).toEqual(['26', '27', '28', '29', '30', '31', '1'])
+    await arrastar(100, 200) // para a direita: volta
+    await arrastar(100, 200) // e mais uma semana para trás
+    expect(numeros()).toEqual(['12', '13', '14', '15', '16', '17', '18'])
+    await arrastar(100, 120) // arraste curto: fica na mesma semana
+    expect(numeros()).toEqual(['12', '13', '14', '15', '16', '17', '18'])
+  })
+})
+
 describe('dia passado', () => {
   async function abrirOntem() {
     window.history.replaceState(null, '', '/#2026-10-20')

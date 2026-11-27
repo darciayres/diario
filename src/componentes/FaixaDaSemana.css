@@ -1,0 +1,124 @@
+/* Faixa da semana (Figma: "Slider - Days" dentro de "calendário_sidebar"). */
+.faixa-da-semana {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.faixa-da-semana__letras {
+  display: flex;
+  justify-content: space-between;
+  width: 219px;
+  font: var(--tipo-corpo-pequeno);
+  color: var(--texto-secundario);
+}
+
+/* Janela de uma semana (240 px); o trilho com as três semanas desliza por trás dela.
+   O arraste para o lado fica com a faixa; para cima e para baixo, a página continua rolando. */
+.faixa-da-semana__janela {
+  width: 240px;
+  overflow: hidden;
+  touch-action: pan-y;
+  user-select: none;
+}
+
+.faixa-da-semana__trilho {
+  display: flex;
+  width: 720px;
+}
+
+/* Smart Animate do Figma: 0,4 s, ease-in-out. */
+.faixa-da-semana__trilho--deslizando {
+  transition: transform 0.4s ease-in-out;
+}
+
+.faixa-da-semana__semana {
+  display: flex;
+  flex-shrink: 0;
+  gap: 2px;
+  width: 240px;
+  box-sizing: border-box;
+  padding: 0 2px;
+}
+
+/* Cada dia (Figma: "Data S"): número em cima e os pontinhos de humor embaixo. */
+.faixa-da-semana__dia {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 32px;
+  height: 40px;
+  padding: 5px 0;
+  border: 0;
+  border-radius: 8px;
+  background: var(--fundo-app);
+  color: var(--texto-principal);
+  font: var(--tipo-corpo-pequeno);
+  cursor: pointer;
+}
+
+.faixa-da-semana__dia--hoje {
+  background: var(--comando-fundo-ativo);
+}
+
+.faixa-da-semana__numero {
+  line-height: 22px;
+}
+
+.faixa-da-semana__pontinhos {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  height: 4px;
+}
+
+/* Um pontinho por humor, na cor do humor (Figma: "Humor - Data"). */
+.faixa-da-semana__pontinho {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+}
+
+.faixa-da-semana__pontinho--1 {
+  background: var(--humor-1);
+}
+
+.faixa-da-semana__pontinho--2 {
+  background: var(--humor-2);
+}
+
+.faixa-da-semana__pontinho--3 {
+  background: var(--humor-3);
+}
+
+.faixa-da-semana__pontinho--4 {
+  background: var(--humor-4);
+}
+
+.faixa-da-semana__pontinho--5 {
+  background: var(--humor-5);
+}
+
+/* O "+" dos dias com mais de 3 humores (Figma: "Ìcone +"): 6 px dentro de um espaço de 4 px. */
+.faixa-da-semana__mais {
+  position: relative;
+  width: 4px;
+  height: 4px;
+}
+
+.faixa-da-semana__mais img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .faixa-da-semana__trilho--deslizando {
+    transition: none;
+  }
+}

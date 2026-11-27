@@ -68,7 +68,7 @@ Página **Mobile Prototype** do arquivo [DINT2-AV02](https://www.figma.com/desig
 ### Fase 4 — Barra lateral e outros dias
 - [x] 4.1 Barra lateral abre e fecha pelo botão, com tudo o que está no Figma. O que o MVP ainda não prevê (Central até a 5.4, novo lembrete até a 6.5, busca, Ver calendário e Configurações) aparece, mas não faz nada: o MVP mostra o design o máximo possível.
 - [x] 4.2 Lista dos últimos 30 dias, do mais novo para o mais antigo (a regra geral, até o primeiro dia escrito, fica para depois do MVP); tocar no nome de um dia abre esse dia, a setinha mostra os horários dele e tocar num horário abre o dia nesse momento.
-- [ ] 4.3 Faixa da semana em carrossel (arrastando, vai para outras semanas), com os pontinhos de humor; abrir dias passados e futuros por ela.
+- [x] 4.3 Faixa da semana em carrossel (arrastando, vai para outras semanas), com os pontinhos de humor; abrir dias passados e futuros por ela.
 - [ ] 4.4 Título do dia com "Ontem", "Daqui a 3 dias" e assim por diante.
 - [ ] 4.5 Humor sem hora fora do dia de hoje: em dias passados, a barra de comandos aparece com o botão de humor, que escreve só `humor/N`; o app não mexe no humor digitado; um segundo humor no mesmo bloco abre um momento novo, sem aviso (regra nova do `PRODUTO.md`).
 

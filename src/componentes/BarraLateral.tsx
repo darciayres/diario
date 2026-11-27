@@ -4,8 +4,7 @@
 //
 // Tudo o que está no Figma aparece. O que o MVP ainda não prevê (Central até a tarefa 5.4,
 // novo lembrete até a 6.5, busca, Ver calendário e Configurações) aparece, mas não faz nada.
-// A lista de dias fica em ListaDeDias. A faixa da semana ainda é simples (só a semana de hoje):
-// o carrossel e os pontinhos de humor entram na tarefa 4.3.
+// A faixa da semana fica em FaixaDaSemana, e a lista de dias em ListaDeDias.
 import { useEffect } from 'react'
 import iconeNovoLembrete from '../assets/icones/alarm_add.svg'
 import iconeCentral from '../assets/icones/dataset.svg'
@@ -13,8 +12,8 @@ import iconeEspaco from '../assets/icones/dataset_vazio.svg'
 import iconeBusca from '../assets/icones/search.svg'
 import iconeConfiguracoes from '../assets/icones/settings.svg'
 import iconeBarraLateral from '../assets/icones/view_sidebar.svg'
-import { semanaDe } from '../datas.ts'
 import './BarraLateral.css'
+import { FaixaDaSemana } from './FaixaDaSemana.tsx'
 import { ListaDeDias } from './ListaDeDias.tsx'
 import { useAlturaSemTeclado } from './useEspacoDoTeclado.ts'
 
@@ -24,16 +23,16 @@ type Props = {
   aoFechar: () => void
   /** Hoje, no formato AAAA-MM-DD. */
   hoje: string
+  /** O dia aberto agora, no formato AAAA-MM-DD. */
+  diaAberto: string
   /** Abre um dia (AAAA-MM-DD); com `hora`, já no momento desse horário. */
   aoAbrirDia: (data: string, hora?: string) => void
 }
 
-const LETRAS_DA_SEMANA = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D']
-
 // Botões que aparecem como no Figma, mas ainda não fazem nada no MVP.
 const semAcao = { 'aria-disabled': true, onClick: () => {} } as const
 
-export function BarraLateral({ aberta, aoAbrir, aoFechar, hoje, aoAbrirDia }: Props) {
+export function BarraLateral({ aberta, aoAbrir, aoFechar, hoje, diaAberto, aoAbrirDia }: Props) {
   // A mesma altura da tela do dia: a tela inteira, sem contar o teclado.
   const alturaSemTeclado = useAlturaSemTeclado()
 
@@ -63,20 +62,7 @@ export function BarraLateral({ aberta, aoAbrir, aoFechar, hoje, aoAbrirDia }: Pr
             </button>
 
             <div className="barra-lateral__calendario">
-              <div className="barra-lateral__semana">
-                <div className="barra-lateral__letras" aria-hidden="true">
-                  {LETRAS_DA_SEMANA.map((letra, i) => (
-                    <span key={i}>{letra}</span>
-                  ))}
-                </div>
-                <div className="barra-lateral__dias">
-                  {semanaDe(hoje).map((data) => (
-                    <span key={data} className={`barra-lateral__dia${data === hoje ? ' barra-lateral__dia--hoje' : ''}`}>
-                      {Number(data.slice(8))}
-                    </span>
-                  ))}
-                </div>
-              </div>
+              <FaixaDaSemana hoje={hoje} diaAberto={diaAberto} visivel={aberta} aoAbrirDia={(data) => aoAbrirDia(data)} />
               <div className="barra-lateral__acoes">
                 <button type="button" className="barra-lateral__ver-calendario" {...semAcao}>
                   Ver calendário
