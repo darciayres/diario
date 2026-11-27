@@ -15,7 +15,6 @@ import { dataDeHoje, horaAgora } from '../datas.ts'
 import { escreverHumor, inserirHora } from '../editor/comandos.ts'
 import { Editor, type ControleDoEditor, type FaixaVisivel } from '../editor/Editor.tsx'
 import { MARGEM_DO_CURSOR_EM_CIMA, MARGEM_DO_CURSOR_EMBAIXO } from '../editor/margens.ts'
-import { diagnostico, diagnosticoAppRolou } from '../diagnostico.ts'
 import { useTextoDoDia } from '../editor/useTextoDoDia.ts'
 import './Hoje.css'
 
@@ -123,10 +122,6 @@ export function Hoje() {
     return () => window.clearTimeout(espera)
   }, [espacoDoTeclado])
 
-  // Diagnóstico temporário (só com ?diagnostico no endereço).
-  useEffect(() => diagnostico('modo', modo), [modo])
-  useEffect(() => diagnostico('teclado', `cobre ${espacoDoTeclado}px`, true), [espacoDoTeclado])
-
   // A altura do teclado, guardada da última vez que ele abriu: assim, ao entrar de novo no modo
   // escrever, o app já sabe onde ele vai cobrir a tela.
   const alturaConhecidaDoTeclado = useRef(0)
@@ -144,27 +139,19 @@ export function Hoje() {
     // Quando o teclado desce, o dia está voltando para o modo ler: nada rola.
     if (!area || modo !== 'escrever' || tecladoDesceu) return
     // Durante um empurrão do Safari, as medidas saem erradas: espera a página voltar ao lugar.
-    if (paginaEmpurrada()) {
-      diagnostico('app espera', 'página empurrada: não recalcula')
-      return
-    }
+    if (paginaEmpurrada()) return
     const cursor = editor.current?.posicaoDoCursor()
     const faixa = faixaVisivel(area, espacoDoTeclado, tecladoAbriuNaEscrita, alturaConhecidaDoTeclado.current)
     if (!cursor || !faixa) return
     const distancia = distanciaAteAFaixa(cursor, faixa)
-    if (Math.abs(distancia) >= 1) {
-      diagnosticoAppRolou(distancia, distancia > 0 ? cursor.bottom : cursor.top, distancia > 0 ? faixa.baixo : faixa.cima)
-      rolarSuave(area, distancia)
-    }
+    if (Math.abs(distancia) >= 1) rolarSuave(area, distancia)
   }, [espacoDoTeclado, modo, tecladoAbriuNaEscrita, tecladoDesceu])
 
   // O Safari às vezes ainda tenta deslizar a página parada para mostrar o cursor; aqui ela volta ao lugar.
   useEffect(() => {
     const vv = window.visualViewport
     const voltarAoLugar = () => {
-      if (window.scrollY === 0) return
-      diagnostico('APP DEVOLVE', `página estava empurrada ${Math.round(window.scrollY)}px`)
-      window.scrollTo(0, 0)
+      if (window.scrollY !== 0) window.scrollTo(0, 0)
     }
     vv?.addEventListener('scroll', voltarAoLugar)
     window.addEventListener('scroll', voltarAoLugar)
@@ -189,9 +176,7 @@ export function Hoje() {
     const faixa = area ? faixaVisivel(area, espacoDoTeclado, false, alturaConhecidaDoTeclado.current) : undefined
     if (!area || !cursor || !faixa) return
     const distancia = distanciaAteAFaixa(cursor, faixa)
-    if (Math.abs(distancia) < 1) return
-    diagnostico('APP PULA', `${Math.round(distancia)}px antes do teclado (cursor ${Math.round(cursor.bottom)}, limite ${Math.round(faixa.baixo)})`)
-    area.scrollTop += distancia
+    if (Math.abs(distancia) >= 1) area.scrollTop += distancia
   }
 
   function escolherModo(novo: Modo) {
@@ -202,7 +187,6 @@ export function Hoje() {
     // Pelo botão do topo, o cursor nasce dentro da parte visível acima do teclado: nada rola.
     const area = rolagem.current
     const faixa = area ? faixaVisivel(area, espacoDoTeclado, false, alturaConhecidaDoTeclado.current) : undefined
-    diagnostico('lápis', faixa ? `cursor vai para a faixa ${Math.round(faixa.cima)} a ${Math.round(faixa.baixo)}` : '')
     editor.current?.escrever(faixa)
   }
 
