@@ -420,6 +420,34 @@ describe('Tela Hoje', () => {
       }
     })
 
+    it('o teclado fica por cima: a tela não encolhe e a barra fica logo acima dele', async () => {
+      const celular = simularCelular()
+      try {
+        await abrirEscrevendo()
+        const tela = screen.getByRole('main')
+        const alturaSemTeclado = tela.style.getPropertyValue('--altura-sem-teclado')
+        celular.mudarTeclado(300)
+        expect(tela.style.getPropertyValue('--altura-sem-teclado')).toBe(alturaSemTeclado)
+        const caixaDaBarra = barra()!.closest('.barra-comandos') as HTMLElement
+        expect(caixaDaBarra.style.getPropertyValue('--folga-inferior')).toBe('300px')
+      } finally {
+        celular.desfazer()
+      }
+    })
+
+    it('o aviso fica fora da área que rola mesmo com o teclado aberto', async () => {
+      const celular = simularCelular()
+      try {
+        await abrirEscrevendo()
+        celular.mudarTeclado(300)
+        const aviso = screen.getByText(/só neste aparelho/)
+        expect(areaQueRola()).not.toContainElement(aviso)
+        expect(screen.getByRole('main')).toContainElement(aviso)
+      } finally {
+        celular.desfazer()
+      }
+    })
+
     it('antes de o teclado subir, a barra já aparece (no computador não há teclado na tela)', async () => {
       const celular = simularCelular()
       try {

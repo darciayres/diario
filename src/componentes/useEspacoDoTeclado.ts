@@ -14,11 +14,6 @@ function acompanhar(avisar: () => void) {
   }
 }
 
-/** Altura da parte visível da tela, em pixels (sem o teclado). */
-function medirAltura(): number {
-  return Math.round(window.visualViewport?.height ?? window.innerHeight)
-}
-
 // A maior altura visível já vista nesta largura de tela: é a altura "sem teclado".
 // No Android, a página toda encolhe junto com o teclado, então só a página não basta para medir.
 let maiorAltura = 0
@@ -37,6 +32,11 @@ function medirTeclado(): number {
   return Math.max(0, Math.round(alturaSemTeclado - vv.height - vv.offsetTop))
 }
 
+/** Quanto da parte de baixo da tela o teclado cobre agora, em pixels (fora do React). */
+export function espacoDoTecladoAgora(): number {
+  return medirTeclado()
+}
+
 /** Altura da tela sem o teclado: onde fica o pé da tela, mesmo com o teclado aberto por cima. */
 function medirAlturaSemTeclado(): number {
   medirTeclado() // atualiza a maior altura já vista
@@ -46,11 +46,6 @@ function medirAlturaSemTeclado(): number {
 /** Altura da tela sem o teclado (não muda quando o teclado abre). */
 export function useAlturaSemTeclado(): number {
   return useSyncExternalStore(acompanhar, medirAlturaSemTeclado, () => 0)
-}
-
-/** Altura da parte visível da tela (diminui quando o teclado abre). */
-export function useAlturaVisivel(): number {
-  return useSyncExternalStore(acompanhar, medirAltura, () => 0)
 }
 
 /** Quanto da parte de baixo da tela o teclado ocupa (0 sem teclado ou no computador). */

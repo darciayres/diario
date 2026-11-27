@@ -2,14 +2,15 @@
 // Abre no modo ler. Tocar no texto ou no botão de escrever passa para o modo escrever;
 // no celular, fechar o teclado volta para o modo ler.
 //
-// A tela funciona como um app: a página fica parada e só a área do texto rola por dentro.
-// A altura da tela acompanha a parte visível (que encolhe quando o teclado abre), então o
-// botão do topo e a barra de comandos ficam presos no lugar pelo próprio navegador.
+// A tela funciona como um app, em camadas: a página fica parada e só a área do texto rola por
+// dentro. O botão do topo e o aviso do pé ficam soltos por cima do texto e nunca se mexem.
+// O teclado é mais uma camada por cima de tudo: ele cobre a parte de baixo da tela, sem
+// encolher nada. Só a barra de comandos acompanha o teclado, logo acima dele.
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import { AlternarModo, type Modo } from '../componentes/AlternarModo.tsx'
 import { BarraDeComandos } from '../componentes/BarraDeComandos.tsx'
 import { TituloDia } from '../componentes/TituloDia.tsx'
-import { useAlturaSemTeclado, useAlturaVisivel, useEspacoDoTeclado } from '../componentes/useEspacoDoTeclado.ts'
+import { useAlturaSemTeclado, useEspacoDoTeclado } from '../componentes/useEspacoDoTeclado.ts'
 import { dataDeHoje, horaAgora } from '../datas.ts'
 import { escreverHumor, inserirHora } from '../editor/comandos.ts'
 import { Editor, type ControleDoEditor } from '../editor/Editor.tsx'
@@ -62,7 +63,6 @@ export function Hoje() {
   const [modo, setModo] = useState<Modo>('ler')
   const editor = useRef<ControleDoEditor>(null)
 
-  const alturaVisivel = useAlturaVisivel()
   const alturaSemTeclado = useAlturaSemTeclado()
   const espacoDoTeclado = useEspacoDoTeclado()
   const tecladoAberto = espacoDoTeclado > TECLADO_ABERTO
@@ -92,8 +92,8 @@ export function Hoje() {
     return () => window.clearTimeout(espera)
   }, [espacoDoTeclado])
 
-  // Quando a tela muda de tamanho (o teclado abriu ou fechou) ou de modo, o texto muda de lugar:
-  // no modo escrever, rola até o cursor ficar à vista; ao crescer, a rolagem pode voltar para cima.
+  // Quando o teclado abre ou fecha, ou o modo muda, o texto pode precisar mudar de lugar:
+  // no modo escrever, rola até o cursor ficar à vista, acima do teclado.
   // Em vez de pular de uma vez, o texto desliza da posição antiga até a nova.
   const rolagem = useRef<HTMLDivElement>(null)
   const coluna = useRef<HTMLDivElement>(null)
@@ -140,10 +140,12 @@ export function Hoje() {
         const caixa = area.getBoundingClientRect()
         // Antes de o teclado subir, o cursor fica na parte de cima, onde o teclado não vai cobrir;
         // assim o Safari não precisa empurrar a página quando o teclado subir.
+        // Com o teclado aberto, o cursor fica acima dele e da barra de comandos (o teclado cobre
+        // a parte de baixo da área do texto, sem encolhê-la).
         const limiteDeBaixo =
           ehTelaDeToque() && !tecladoAbriuNaEscrita
             ? caixa.top + caixa.height * PARTE_LIVRE_DO_TECLADO
-            : caixa.bottom - MARGEM_DO_CURSOR_EMBAIXO
+            : caixa.bottom - espacoDoTeclado - MARGEM_DO_CURSOR_EMBAIXO
         const limiteDeCima = caixa.top + MARGEM_DO_CURSOR_EM_CIMA
         if (cursor.bottom > limiteDeBaixo) area.scrollTop += cursor.bottom - limiteDeBaixo
         else if (cursor.top < limiteDeCima) area.scrollTop -= limiteDeCima - cursor.top
@@ -153,7 +155,7 @@ export function Hoje() {
     const depois = area.scrollTop
     rolagemAnterior.current = depois
     deslizar(conteudo, depois - antes + deslocamento)
-  }, [alturaVisivel, modo, tecladoAbriuNaEscrita, tecladoDesceu])
+  }, [espacoDoTeclado, modo, tecladoAbriuNaEscrita, tecladoDesceu])
 
   // O Safari às vezes ainda tenta deslizar a página parada para mostrar o cursor; aqui ela volta ao lugar.
   useEffect(() => {
@@ -179,7 +181,6 @@ export function Hoje() {
       className={`hoje hoje--${modo}`}
       style={
         {
-          '--altura-visivel': alturaVisivel ? `${alturaVisivel}px` : undefined,
           '--altura-sem-teclado': alturaSemTeclado ? `${alturaSemTeclado}px` : undefined,
         } as CSSProperties
       }
@@ -207,7 +208,7 @@ export function Hoje() {
         </div>
       </div>
 
-      {/* Preso no pé da tela, como o botão do topo. No modo escrever, o teclado abre por cima dele.
+      {/* Preso no pé da tela, como o botão do topo. No modo escrever, o teclado cobre ele.
           Provisório até a tela Sobre (tarefa 7.2). */}
       <p className="hoje__privacidade">Seus textos ficam só neste aparelho, sem criptografia.</p>
 
@@ -219,6 +220,7 @@ export function Hoje() {
       {fase === 'pronto' && mostrarBarra && (
         <BarraDeComandos
           tecladoAberto={tecladoAberto}
+          espacoDoTeclado={espacoDoTeclado}
           aoInserirHora={() => editor.current?.editar((t, cursor) => inserirHora(t, cursor, horaAgora()))}
           aoEscolherHumor={(n) => editor.current?.editar((t, cursor) => escreverHumor(t, cursor, n, horaAgora()))}
           aoTocar={() => editor.current?.focar()}

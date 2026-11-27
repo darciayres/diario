@@ -1,8 +1,9 @@
 /* Barra de comandos e pop-up de humor (Figma: "command bar" e "humor_pop-up"). */
 
 .barra-comandos {
-  /* Presa embaixo da tela do app, que termina logo acima do teclado.
-     Sem teclado, fica acima do aviso do pé da tela e da barra de gestos do iPhone. */
+  /* Com o teclado aberto, fica logo acima dele (a tela não encolhe: o teclado cobre a parte de
+     baixo, e --folga-inferior é a altura que ele cobre). Sem teclado, fica acima do aviso do pé
+     da tela e da barra de gestos do iPhone. */
   position: absolute;
   z-index: 10;
   bottom: calc(12px + var(--folga-inferior, env(safe-area-inset-bottom) + 36px));

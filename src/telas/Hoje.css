@@ -1,21 +1,39 @@
-/* A tela ocupa exatamente a parte visível (que encolhe quando o teclado abre) e não rola;
+/* A tela ocupa a altura inteira, mesmo com o teclado aberto (ele só fica por cima), e não rola;
    quem rola é a área do texto, por dentro. */
 .hoje {
+  /* Altura do aviso do pé da tela (uma linha de texto e o espaço embaixo dele). */
+  --altura-do-aviso: calc(env(safe-area-inset-bottom) + 33px);
+  /* Tamanho do esmaecer do texto, em cima e embaixo. */
+  --esmaecer: 32px;
+
   position: fixed;
   top: 0;
   right: 0;
   left: 0;
-  height: var(--altura-visivel, 100dvh);
+  height: var(--altura-sem-teclado, 100dvh);
   overflow: hidden;
 }
 
 .hoje__rolagem {
   height: 100%;
   overflow-y: auto;
-  /* O texto esmaece ao chegar no alto da tela, em vez de ser cortado seco pela faixa do
-     relógio, que o Safari desenha por conta própria (fora do app instalado). */
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 calc(env(safe-area-inset-top) + 32px));
-  mask-image: linear-gradient(to bottom, transparent 0, #000 calc(env(safe-area-inset-top) + 32px));
+  /* O texto esmaece do mesmo jeito em cima e embaixo, em vez de ser cortado seco:
+     em cima, ao chegar na faixa do relógio (que o Safari desenha por conta própria);
+     embaixo, ao chegar no aviso do pé da tela. No modo escrever, o teclado cobre o de baixo. */
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 calc(env(safe-area-inset-top) + var(--esmaecer)),
+    #000 calc(100% - var(--altura-do-aviso) - var(--esmaecer)),
+    transparent calc(100% - var(--altura-do-aviso))
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 calc(env(safe-area-inset-top) + var(--esmaecer)),
+    #000 calc(100% - var(--altura-do-aviso) - var(--esmaecer)),
+    transparent calc(100% - var(--altura-do-aviso))
+  );
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
 }
@@ -67,20 +85,22 @@
   font: var(--tipo-corpo-xpequeno);
 }
 
-/* Aviso preso no pé da tela (sem o teclado). Fica fora da área que encolhe com o teclado:
-   no modo escrever, o teclado abre por cima dele e, ao descer, o revela de novo.
-   Em cima dele, o texto esmaece em vez de passar por baixo das letras. */
+/* Aviso preso no pé da tela, solto por cima do texto, como o botão do topo. Nunca se mexe:
+   no modo escrever, o teclado cobre ele e, ao descer, o revela de novo.
+   O texto esmaece antes de chegar nele (veja .hoje__rolagem). */
 .hoje__privacidade {
-  position: fixed;
+  position: absolute;
   z-index: 4;
-  top: var(--altura-sem-teclado, 100svh);
+  bottom: 0;
   left: 50%;
   box-sizing: border-box;
+  display: flex;
+  align-items: flex-start;
   width: min(100%, 393px);
+  height: var(--altura-do-aviso);
   margin: 0;
-  padding: 32px 24px calc(16px + env(safe-area-inset-bottom));
-  background: linear-gradient(to bottom, transparent, var(--fundo-app) 28px);
-  transform: translate(-50%, -100%);
+  padding: 0 24px;
+  transform: translateX(-50%);
   font: var(--tipo-corpo-xpequeno);
   color: var(--texto-secundario);
   pointer-events: none;

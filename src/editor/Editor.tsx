@@ -7,6 +7,7 @@ import { Annotation, Compartment, EditorState } from '@codemirror/state'
 import { EditorView, keymap, placeholder } from '@codemirror/view'
 import { useEffect, useImperativeHandle, useRef, useState, type Ref } from 'react'
 import type { Modo } from '../componentes/AlternarModo.tsx'
+import { espacoDoTecladoAgora } from '../componentes/useEspacoDoTeclado.ts'
 import { horaAgora } from '../datas.ts'
 import { avisos } from './avisos.ts'
 import type { Edicao } from './comandos.ts'
@@ -120,8 +121,12 @@ export function Editor({ texto, aoMudar, modo, aoMudarModo, ref }: Props) {
             autocapitalize: 'sentences',
           }),
           tema,
-          // Ao digitar, o texto rola antes de o cursor chegar atrás da barra de comandos ou do botão do topo.
-          EditorView.scrollMargins.of(() => ({ top: MARGEM_DO_CURSOR_EM_CIMA, bottom: MARGEM_DO_CURSOR_EMBAIXO })),
+          // Ao digitar, o texto rola antes de o cursor chegar atrás do teclado (que cobre a parte de
+          // baixo da tela), da barra de comandos ou do botão do topo.
+          EditorView.scrollMargins.of(() => ({
+            top: MARGEM_DO_CURSOR_EM_CIMA,
+            bottom: espacoDoTecladoAgora() + MARGEM_DO_CURSOR_EMBAIXO,
+          })),
           compartimentoDoModo.current.of(configuracaoDoModo(modoInicial)),
           // Dia vazio: dica em cinza, que some assim que a pessoa começa a escrever.
           placeholder('Escreva aqui...'),
