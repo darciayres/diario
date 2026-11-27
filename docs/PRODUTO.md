@@ -130,6 +130,7 @@ Regras gerais:
 - Cada dia tem dois modos: **escrever** (Escritor) e **ler** (Leitor). Eles se alternam pelo botão no topo e também:
   - **tocar no texto** passa para o modo escrever, com o cursor onde a pessoa tocou (no celular, o teclado sobe);
   - no celular, **fechar o teclado** passa para o modo ler.
+- Ao passar para o modo escrever **pelo botão do topo**, a tela não rola: o cursor vai para o fim da última coisa escrita, se ela estiver à vista acima de onde o teclado abre; se não estiver, vai para o fim da última linha à vista acima do teclado.
 - A barra de comandos só aparece no modo escrever.
 - A barra de comandos do Escritor fica **fixa**, logo acima do teclado. Os botões dela **só escrevem o comando onde está o cursor** (decidido em 26/11/2026). A exceção é o de humor, que abre a escolha de 1 a 5. Os pop-ups de terapia e de lembrete não abrem pela barra: abrem pela Centralizadora e pela barra lateral. Em dias passados e futuros, alguns botões somem (veja "Dias que não são hoje").
 - O destaque de um comando (cor `comando/fundo-ativo`) aparece quando a pessoa toca, apaga ou escreve nele.
