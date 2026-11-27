@@ -74,23 +74,22 @@ Regras gerais:
 | 5 | Muito bem |
 
 - Na tela, o humor sempre aparece como **ponto colorido + número + nome** (ex.: "4 · Bem"). Nunca só a cor.
-- O humor fica sempre **na linha de um `hora/`**: `hora/14:30 humor/4`. Quando a pessoa **digita** um `humor/` e o cursor sai da linha (com Enter, tocando em outro lugar ou saindo do app), o **editor** arruma o texto:
+- O humor vale **onde for escrito**, com ou sem hora. Cada bloco tem no máximo um humor: um segundo `humor/` no mesmo bloco abre um momento novo, sem hora. Não é erro e não ganha aviso.
+- **No dia de hoje**, o app junta a hora atual ao humor, porque a hora é conhecida e guarda o dado para as estatísticas no futuro. Quando a pessoa **digita** um `humor/` e o cursor sai da linha (com Enter, tocando em outro lugar ou saindo do app), o **editor** arruma o texto:
   - **Bloco com hora e sem humor:** o comando vai para a linha do `hora/` do bloco. Se a linha de onde ele saiu fica vazia, ela some.
-  - **Bloco sem hora** (o começo do dia): o editor escreve `hora/` com a hora atual antes do humor, na mesma linha, abrindo um bloco novo: `hora/09:12 humor/4`.
-  - **Bloco que já tem humor:** o editor faz o mesmo, `hora/` com a hora atual antes do novo humor, abrindo um bloco novo: `hora/15:10 humor/3`.
-  - Os dois últimos casos só acontecem no dia de hoje (veja "Dias que não são hoje").
-- O **botão** de humor age no bloco do cursor e segue a mesma regra do texto digitado:
+  - **Bloco sem hora** (o começo do dia), ou **bloco que já tem humor:** o editor escreve `hora/` com a hora atual antes do humor, na mesma linha, abrindo um bloco novo: `hora/15:10 humor/3`.
+- O **botão** de humor, no dia de hoje, segue a mesma regra:
   - **Bloco com hora e sem humor:** escreve `humor/N` na linha do `hora/`.
-  - **Bloco sem hora** (o começo do dia), ou **bloco que já tem humor:** abre um bloco novo, numa linha logo abaixo da linha do cursor, com a hora atual e o humor: `hora/15:10 humor/3`. Se a linha do cursor estiver vazia, usa ela mesma.
-  - O botão nunca troca um humor que já existe. Para corrigir, a pessoa toca na etiqueta e muda o número no texto.
-- Caso limite: texto colado com dois `humor/` no mesmo bloco, sem `hora/` entre eles. O app não inventa hora: o segundo abre um **bloco novo sem horário**. Não é erro: o segundo humor vale e aparece como etiqueta.
+  - **Bloco sem hora**, ou **bloco que já tem humor:** abre um bloco novo, numa linha logo abaixo da linha do cursor, com a hora atual e o humor: `hora/15:10 humor/3`. Se a linha do cursor estiver vazia, usa ela mesma.
+- **Em dias passados**, o app nunca mexe no humor digitado nem acrescenta hora. O botão de humor escreve só `humor/N` onde está o cursor. Se ali o comando não valeria (no meio de uma frase), ele começa uma linha nova.
+- O botão nunca troca um humor que já existe. Para corrigir, a pessoa toca na etiqueta e muda o número no texto.
 
 ### Dias que não são hoje
 
 - **Hora:** o botão de hora escreve a hora de agora, o que só faz sentido no dia de hoje. Por isso, em dias passados e futuros, o botão de hora não aparece na barra de comandos, e o app nunca completa um `hora/` vazio com a hora atual. O comando `hora/` digitado vale em qualquer dia: a pessoa pode escrever `hora/09:15` para contar algo que aconteceu, ou vai acontecer, nessa hora.
 - **Humor em dias futuros:** `humor/` é sempre um erro, porque ninguém registra como se sente num dia que ainda não chegou. O comando ganha o mesmo aviso dos comandos escritos errado e não conta como humor. O botão de humor não aparece na barra de comandos.
-- **Humor em dias passados:** o botão de humor não aparece na barra de comandos, mas o `humor/` digitado continua valendo. Se a pessoa digita um segundo `humor/` num bloco que já tem humor, o editor abre um **bloco novo sem hora** (como no caso limite do texto colado), em vez de inserir a hora atual.
-- **Barra de comandos:** enquanto não houver nenhum botão para mostrar (no MVP, até chegarem os de terapia e de lembrete), a barra não aparece em dias passados e futuros.
+- **Humor em dias passados:** vale com ou sem hora (veja "Humor"). O botão de humor aparece na barra de comandos e escreve só `humor/N`, sem hora.
+- **Barra de comandos:** em dias passados, ela aparece com o botão de humor. Em dias futuros, enquanto não houver nenhum botão para mostrar (no MVP, até chegarem os de terapia e de lembrete), ela não aparece.
 
 ### Terapia
 

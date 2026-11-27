@@ -70,6 +70,7 @@ Página **Mobile Prototype** do arquivo [DINT2-AV02](https://www.figma.com/desig
 - [x] 4.2 Lista dos últimos 30 dias, do mais novo para o mais antigo (a regra geral, até o primeiro dia escrito, fica para depois do MVP); tocar no nome de um dia abre esse dia, a setinha mostra os horários dele e tocar num horário abre o dia nesse momento.
 - [ ] 4.3 Faixa da semana em carrossel (arrastando, vai para outras semanas), com os pontinhos de humor; abrir dias passados e futuros por ela.
 - [ ] 4.4 Título do dia com "Ontem", "Daqui a 3 dias" e assim por diante.
+- [ ] 4.5 Humor sem hora fora do dia de hoje: em dias passados, a barra de comandos aparece com o botão de humor, que escreve só `humor/N`; o app não mexe no humor digitado; um segundo humor no mesmo bloco abre um momento novo, sem aviso (regra nova do `PRODUTO.md`).
 
 ### Fase 5 — Terapia
 - [ ] 5.1 Parser de `terapia/`, com testes.
