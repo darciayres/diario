@@ -127,7 +127,7 @@ Regras gerais:
 - **Mobile primeiro.** Quadro base: iPhone 16, **393 × 852**. O desktop é adaptação no fim.
 - **Navegação: barra lateral** (decidido em 26/11/2026). Abre por cima da tela, pelo botão no canto superior esquerdo. Nela ficam a faixa da semana, a lista de dias e o botão **Central**.
   - **Faixa da semana:** um carrossel com os 7 dias, de segunda a domingo; arrastando, vai para outras semanas. Embaixo de cada dia, um pontinho para cada humor do dia, na cor do humor e na ordem do texto: até 3 pontinhos e, se houver mais, um **+** depois deles. A marca no canto mostra que o dia tem lembrete.
-  - **Lista de dias:** todos os dias, do mais novo para o mais antigo, com Hoje no topo.
+  - **Lista de dias:** todos os dias, de hoje até o primeiro dia escrito, do mais novo para o mais antigo, com Hoje no topo (no MVP, só os últimos 30 dias). Tocar no nome de um dia abre esse dia; a setinha ao lado mostra embaixo os horários dos momentos do dia, e tocar num horário abre o dia já nesse momento. Dia sem horário marcado não tem setinha.
   - Cada dia tem o próprio endereço: o gesto de voltar do navegador volta ao dia aberto antes.
 - **Título do dia:** o dia da semana, junto de quão perto ele está de hoje:
   - hoje: só o dia da semana ("Quarta-feira");
