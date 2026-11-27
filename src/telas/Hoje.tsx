@@ -9,6 +9,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import { AlternarModo, type Modo } from '../componentes/AlternarModo.tsx'
 import { BarraDeComandos } from '../componentes/BarraDeComandos.tsx'
+import { BarraLateral } from '../componentes/BarraLateral.tsx'
 import { TituloDia } from '../componentes/TituloDia.tsx'
 import { useAlturaSemTeclado, useEspacoDoTeclado } from '../componentes/useEspacoDoTeclado.ts'
 import { dataDeHoje, horaAgora } from '../datas.ts'
@@ -84,6 +85,7 @@ export function Hoje() {
   const [data] = useState(() => dataDeHoje())
   const { texto, fase, falhouSalvar, alterar } = useTextoDoDia(data)
   const [modo, setModo] = useState<Modo>('ler')
+  const [barraLateralAberta, setBarraLateralAberta] = useState(false)
   const editor = useRef<ControleDoEditor>(null)
 
   const alturaSemTeclado = useAlturaSemTeclado()
@@ -250,6 +252,14 @@ export function Hoje() {
           aoTocar={() => editor.current?.focar()}
         />
       )}
+
+      {/* Por cima de tudo. O botão dela fica no canto superior esquerdo, na linha do botão ler/escrever. */}
+      <BarraLateral
+        aberta={barraLateralAberta}
+        aoAbrir={() => setBarraLateralAberta(true)}
+        aoFechar={() => setBarraLateralAberta(false)}
+        hoje={data}
+      />
     </main>
   )
 }

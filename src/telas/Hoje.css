@@ -54,7 +54,8 @@
 
 /* Linha de botões do topo (Figma: "botões superiores"). Sem faixa: só o botão flutua
    e o texto passa por baixo dele. A área vazia em volta deixa o toque chegar ao texto.
-   O botão da barra lateral entra à esquerda na tarefa 4.1. */
+   O botão da barra lateral, à esquerda, fica na própria barra lateral (componentes/BarraLateral.css),
+   porque desliza junto com ela. */
 .hoje__topo {
   position: absolute;
   top: 0;

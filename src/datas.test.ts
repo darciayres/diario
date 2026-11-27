@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { dataDeHoje, horaAgora, tituloDoDia } from './datas.ts'
+import { dataDeHoje, horaAgora, rotuloNaListaDeDias, semanaDe, somarDias, tituloDoDia } from './datas.ts'
 
 describe('horaAgora', () => {
   it('usa HH:MM com zeros', () => {
@@ -31,5 +31,37 @@ describe('tituloDoDia', () => {
   it('funciona com sábado e domingo', () => {
     expect(tituloDoDia('2026-11-28').diaDaSemana).toBe('Sábado')
     expect(tituloDoDia('2026-11-29').diaDaSemana).toBe('Domingo')
+  })
+})
+
+describe('somarDias', () => {
+  it('anda para a frente e para trás, virando o mês e o ano', () => {
+    expect(somarDias('2026-10-31', 1)).toBe('2026-11-01')
+    expect(somarDias('2026-01-01', -1)).toBe('2025-12-31')
+    expect(somarDias('2028-02-28', 1)).toBe('2028-02-29')
+  })
+})
+
+describe('rotuloNaListaDeDias', () => {
+  const hoje = '2026-10-20' // uma terça-feira
+
+  it('marca hoje e ontem, como no Figma', () => {
+    expect(rotuloNaListaDeDias('2026-10-20', hoje)).toBe('Hoje, Terça-Feira (20/10/26)')
+    expect(rotuloNaListaDeDias('2026-10-19', hoje)).toBe('Ontem, Segunda-Feira (19/10/26)')
+  })
+
+  it('nos outros dias, só o dia da semana e a data', () => {
+    expect(rotuloNaListaDeDias('2026-10-18', hoje)).toBe('Domingo (18/10/26)')
+    expect(rotuloNaListaDeDias('2026-10-17', hoje)).toBe('Sábado (17/10/26)')
+    expect(rotuloNaListaDeDias('2026-10-15', hoje)).toBe('Quinta-Feira (15/10/26)')
+  })
+})
+
+describe('semanaDe', () => {
+  it('vai de segunda a domingo', () => {
+    const semana = ['2026-10-19', '2026-10-20', '2026-10-21', '2026-10-22', '2026-10-23', '2026-10-24', '2026-10-25']
+    expect(semanaDe('2026-10-21')).toEqual(semana) // quarta
+    expect(semanaDe('2026-10-19')).toEqual(semana) // segunda
+    expect(semanaDe('2026-10-25')).toEqual(semana) // domingo
   })
 })

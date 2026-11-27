@@ -1,0 +1,257 @@
+/* Barra lateral (Figma: "Sidebar", estados hidden e exposed). Fica por cima de toda a tela,
+   alinhada à coluna de 393 px. Fechada, só o botão aparece; o resto não recebe toques. */
+.barra-lateral {
+  position: absolute;
+  z-index: 20;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: min(100%, 393px);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+/* Fora do painel: transparente, como no Figma. Aberta, tocar aqui fecha a barra. */
+.barra-lateral__fora {
+  position: absolute;
+  inset: 0;
+}
+
+.barra-lateral--aberta .barra-lateral__fora {
+  pointer-events: auto;
+}
+
+/* Painel: 257 px de conteúdo com 20 px de cada lado. Animação do Figma (Smart Animate,
+   ease-out, 0,3 s): aparece e some esmaecendo. */
+.barra-lateral__painel {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  box-sizing: border-box;
+  display: flex;
+  width: 297px;
+  padding: calc(env(safe-area-inset-top) + 12px) 20px max(16px, env(safe-area-inset-bottom));
+  background: var(--fundo-superficie);
+  box-shadow: var(--sombra-botoes);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.3s ease-out,
+    visibility 0s linear 0.3s;
+}
+
+.barra-lateral--aberta .barra-lateral__painel {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition:
+    opacity 0.3s ease-out,
+    visibility 0s;
+}
+
+.barra-lateral__conteudo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  min-height: 0;
+}
+
+.barra-lateral__topo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Botões "Central" e "Configurações": ícone, texto no meio e um espaço do tamanho do ícone. */
+.barra-lateral__botao-grande {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 50px;
+  padding: 8px 16px;
+  border: 1px solid var(--borda-padrao);
+  border-radius: 8px;
+  background: var(--fundo-superficie);
+  box-shadow: var(--sombra-sutil);
+  color: var(--acao-primaria);
+  font: var(--tipo-corpo-pequeno);
+  cursor: pointer;
+}
+
+/* Calendário da barra (Figma: "calendário_sidebar"). */
+.barra-lateral__calendario {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--borda-padrao);
+  border-radius: 8px;
+  background: var(--fundo-superficie);
+}
+
+.barra-lateral__semana {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.barra-lateral__letras {
+  display: flex;
+  justify-content: space-between;
+  width: 219px;
+  font: var(--tipo-corpo-pequeno);
+  color: var(--texto-secundario);
+}
+
+.barra-lateral__dias {
+  display: flex;
+  gap: 2px;
+  padding: 0 2px;
+}
+
+/* Cada dia (Figma: "Data S"). Os pontinhos de humor entram na tarefa 4.3. */
+.barra-lateral__dia {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  width: 32px;
+  height: 40px;
+  padding-top: 5px;
+  border-radius: 8px;
+  background: var(--fundo-app);
+  color: var(--texto-principal);
+  font: var(--tipo-corpo-pequeno);
+}
+
+.barra-lateral__dia--hoje {
+  background: var(--comando-fundo-ativo);
+}
+
+.barra-lateral__acoes {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.barra-lateral__ver-calendario {
+  flex: 1;
+  padding: 8px 16px;
+  border: 1px solid var(--borda-padrao);
+  border-radius: 8px;
+  background: var(--fundo-superficie);
+  color: var(--texto-secundario);
+  font: var(--tipo-corpo-pequeno);
+  cursor: pointer;
+}
+
+.barra-lateral__novo-lembrete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--acao-primaria);
+  cursor: pointer;
+}
+
+.barra-lateral__busca-e-lista {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  margin-top: 8px; /* 16 px entre o calendário e a busca, como no Figma */
+}
+
+/* Busca (Figma: "Search"). Ainda não faz nada no MVP. */
+.barra-lateral__busca {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px;
+  border: 1px solid var(--borda-padrao);
+  border-radius: 8px;
+  font: var(--tipo-corpo-xpequeno);
+  color: var(--texto-secundario);
+}
+
+/* Lista de dias (Figma: "Lista de dias (Sidebar)"). A lista completa entra na tarefa 4.2. */
+.barra-lateral__lista {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 0;
+}
+
+.barra-lateral__dia-da-lista {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--texto-secundario);
+  font: var(--tipo-corpo-xpequeno);
+  text-align: left;
+  cursor: pointer;
+}
+
+.barra-lateral__dia-da-lista--hoje {
+  color: var(--acao-primaria);
+}
+
+.barra-lateral__divisoria {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-top: 1px solid var(--borda-padrao);
+}
+
+/* Botão da barra lateral (Figma: "Button Sidebar"). Fechada, fica no canto superior esquerdo;
+   aberta, desliza até a borda do painel (Smart Animate, ease-out, 0,3 s). */
+.barra-lateral__botao {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 12px);
+  left: 20px;
+  display: flex;
+  padding: 10px;
+  border: 1px solid var(--borda-padrao);
+  border-radius: 29px;
+  background: var(--fundo-superficie);
+  box-shadow: var(--sombra-barra);
+  pointer-events: auto;
+  cursor: pointer;
+  transition: transform 0.3s ease-out;
+}
+
+/* No Figma, o ícone aparece espelhado (a coluna à esquerda). */
+.barra-lateral__botao img {
+  transform: scaleX(-1);
+}
+
+/* 297 px do painel + 10 px de espaço, menos os 20 px de onde o botão sai. */
+.barra-lateral--aberta .barra-lateral__botao {
+  transform: translateX(287px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .barra-lateral__painel,
+  .barra-lateral--aberta .barra-lateral__painel,
+  .barra-lateral__botao {
+    transition: none;
+  }
+}
