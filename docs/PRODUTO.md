@@ -90,6 +90,7 @@ Regras gerais:
 - **Hora:** o botão de hora escreve a hora de agora, o que só faz sentido no dia de hoje. Por isso, em dias passados e futuros, o botão de hora não aparece na barra de comandos, e o app nunca completa um `hora/` vazio com a hora atual. O comando `hora/` digitado vale em qualquer dia: a pessoa pode escrever `hora/09:15` para contar algo que aconteceu, ou vai acontecer, nessa hora.
 - **Humor em dias futuros:** `humor/` é sempre um erro, porque ninguém registra como se sente num dia que ainda não chegou. O comando ganha o mesmo aviso dos comandos escritos errado e não conta como humor. O botão de humor não aparece na barra de comandos.
 - **Humor em dias passados:** o botão de humor não aparece na barra de comandos, mas o `humor/` digitado continua valendo. Se a pessoa digita um segundo `humor/` num bloco que já tem humor, o editor abre um **bloco novo sem hora** (como no caso limite do texto colado), em vez de inserir a hora atual.
+- **Barra de comandos:** enquanto não houver nenhum botão para mostrar (no MVP, até chegarem os de terapia e de lembrete), a barra não aparece em dias passados e futuros.
 
 ### Terapia
 
@@ -125,6 +126,16 @@ Regras gerais:
 
 - **Mobile primeiro.** Quadro base: iPhone 16, **393 × 852**. O desktop é adaptação no fim.
 - **Navegação: barra lateral** (decidido em 26/11/2026). Abre por cima da tela, pelo botão no canto superior esquerdo. Nela ficam a faixa da semana, a lista de dias e o botão **Central**.
+  - **Faixa da semana:** um carrossel com os 7 dias, de segunda a domingo; arrastando, vai para outras semanas. Embaixo de cada dia, um pontinho para cada humor do dia, na cor do humor e na ordem do texto: até 3 pontinhos e, se houver mais, um **+** depois deles. A marca no canto mostra que o dia tem lembrete.
+  - **Lista de dias:** todos os dias, do mais novo para o mais antigo, com Hoje no topo.
+  - Cada dia tem o próprio endereço: o gesto de voltar do navegador volta ao dia aberto antes.
+- **Título do dia:** o dia da semana, junto de quão perto ele está de hoje:
+  - hoje: só o dia da semana ("Quarta-feira");
+  - ontem e amanhã: "Ontem, terça-feira", "Amanhã, quinta-feira";
+  - até 6 dias: "Segunda-feira, há 4 dias", "Sábado, daqui a 3 dias";
+  - de 7 dias até um mês, em semanas e dias: "Quarta-feira, daqui a uma semana", "Sábado, daqui a uma semana e 3 dias", "Terça-feira, há 2 semanas e um dia";
+  - a partir de um mês, só em meses: "Segunda-feira, há um mês", "Sexta-feira, daqui a 3 meses";
+  - a partir de um ano, só em anos: "Domingo, há um ano", "Quinta-feira, há 2 anos".
 - **Centralizadora:** uma tela de cards, aberta pelo botão Central. Os cards são Tópicos de terapia, Calendário e Estatísticas. No MVP entra só o card de Tópicos de terapia, com o botão de novo lembrete.
 - Ao abrir o app, o dia de hoje aparece direto, no modo ler, sem telas no meio.
 - Cada dia tem dois modos: **escrever** (Escritor) e **ler** (Leitor). Eles se alternam pelo botão no topo e também:
